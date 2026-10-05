@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Enviar para o totem · Vip Gráfica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="conversor.js"></script>
+<style>
+:root{--ink:#1b2033;--muted:#646b7a;--line:#e2e4ea;--red:#d12d27;--red-soft:#fdeeec;--good:#1d8a4e;--good-soft:#e1f3e8;--bad:#c0352b;--bad-soft:#fbe5e3;--nav:#15171f;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:#fff;color:var(--ink);font-family:"Montserrat",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.45}
+header{display:flex;align-items:center;gap:12px;padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px;background:linear-gradient(90deg,#fff 55%,var(--red-soft))}
+header img{height:40px}
+header b{display:block;font-size:18px;font-weight:800}
+header span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.strip{height:8px;background:var(--nav)}
+main{padding:24px 20px 40px;max-width:520px;margin:0 auto;display:grid;gap:20px}
+h1{font-size:26px;font-weight:800;margin:0;line-height:1.15;border-left:5px solid var(--red);padding-left:14px;text-wrap:balance}
+p{margin:0;color:var(--muted)}
+.pick{position:relative;display:grid;place-items:center;gap:6px;min-height:170px;border-radius:22px;background:var(--red);color:#fff;text-align:center;padding:20px;box-shadow:0 10px 26px rgba(209,45,39,.25)}
+.pick b{font-size:26px;font-weight:800}
+.pick input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+.tips{display:grid;gap:8px;font-size:14px;color:var(--muted);padding:0;margin:0;list-style:none}
+.tips li{padding:12px 14px;border-radius:12px;background:#f6f7f9}
+.msg{padding:14px 16px;border-radius:12px;font-weight:600}
+.msg.bad{background:var(--bad-soft);color:var(--bad)}
+.wait{display:flex;gap:10px;align-items:center;color:var(--muted);font-weight:600}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--red);animation:p 1.2s infinite}
+@keyframes p{50%{opacity:.25}}
+.bar{height:12px;border-radius:99px;background:#f1f2f6;overflow:hidden}
+.bar div{height:100%;width:0;background:var(--red);transition:width .3s}
+.done{display:grid;justify-items:center;text-align:center;gap:14px;padding-top:20px}
+.ring{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:var(--good-soft);color:var(--good)}
+.ring svg{width:50px;height:50px}
+.done h1{border:0;padding:0}
+footer{font-size:12px;color:var(--muted);text-align:center;padding:0 20px calc(24px + env(safe-area-inset-bottom,0px))}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header><img src="logo.png" alt="Vip Gráfica"><div><b>Enviar para o totem</b><span>Impressão rápida</span></div></header>
+<div class="strip"></div>
+<main id="app"><div class="wait"><span class="dot"></span>Conectando ao totem…</div></main>
+<footer>O arquivo é usado só para esta impressão e apagado logo depois.</footer>
+<script>
+(async () => {
+  const app = document.getElementById("app");
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const erro = (titulo, texto) => { app.innerHTML = `<h1>${titulo}</h1><div class="msg bad">${texto}</div>`; };
+  const token = new URLSearchParams(location.search).get("t") || "";
+  const cfg = window.TOTEM_CONFIG || {};
+  if (!/^[a-f0-9]{32}$/.test(token)) return erro("QR Code inválido", "Leia de novo o QR Code que aparece na tela do totem.");
+  if (!window.supabase || !cfg.SUPABASE_ANON_KEY || cfg.SUPABASE_ANON_KEY.startsWith("COLE")) return erro("Totem não configurado", "Avise a equipe no balcão.");
+  const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+
+  const { data: status, error } = await sb.rpc("totem_sessao_abrir", { p_token: token });
+  if (error) return erro("Não foi possível conectar", "Verifique sua internet e leia o QR Code de novo.");
+  if (!status) return erro("Este QR Code expirou", "Toque em \"Pelo celular\" no totem para gerar um novo.");
+  if (status === "enviado") return erro("Arquivo já enviado", "Continue na tela do totem. Para mandar outro, comece um novo pedido lá.");
+
+  app.innerHTML = `
+    <h1>Faça o upload do seu arquivo aqui</h1>
+    <p>Escolha o PDF, a foto ou o texto que você quer imprimir. Ele aparece na tela do totem em seguida.</p>
+    <label class="pick"><b>Escolher arquivo</b><span>${window.TotemConversor.TIPOS}</span>
+      <input type="file" id="f" accept="${window.TotemConversor.ACCEPT}"></label>
+    <div id="msg"></div>
+    <ul class="tips">
+      <li><b>Arquivo do WhatsApp?</b> Abra a conversa, toque no documento, depois em compartilhar → Salvar em Arquivos. Aí escolha aqui.</li>
+      <li><b>Word, Excel ou PowerPoint?</b> Por enquanto, salve como PDF antes de enviar (no app: Compartilhar ou Imprimir → Salvar como PDF).</li>
+    </ul>`;
+
+  const input = document.getElementById("f"), msg = document.getElementById("msg");
+  input.onchange = async () => {
+    const f0 = input.files[0]; if (!f0) return;
+    input.disabled = true;
+    msg.innerHTML = `<div class="wait"><span class="dot"></span>Preparando ${esc(f0.name)}…</div>`;
+    let arq;
+    try { arq = await window.TotemConversor.normalizar(f0); }
+    catch (e) { input.disabled = false; input.value = ""; msg.innerHTML = `<div class="msg bad">${esc(e.totem ? e.message : "Não foi possível ler esse arquivo.")}</div>`; return; }
+    const f = arq.blob, tipo = arq.mime, nomeFinal = arq.nome;
+    msg.innerHTML = `<div class="wait"><span class="dot"></span>Enviando ${esc(nomeFinal)}…</div><div class="bar" style="margin-top:10px"><div id="pb"></div></div>`;
+    let pct = 0; const pb = document.getElementById("pb");
+    const iv = setInterval(() => { pct = Math.min(90, pct + 6); pb.style.width = pct + "%"; }, 250);
+    const ext = tipo === "application/pdf" ? "pdf" : tipo === "image/png" ? "png" : "jpg";
+    const path = `${token}/${Date.now()}.${ext}`;
+    const up = await sb.storage.from("totem-uploads").upload(path, f, { contentType: tipo, upsert: false });
+    if (up.error) { clearInterval(iv); input.disabled = false; input.value = ""; msg.innerHTML = `<div class="msg bad">Não foi possível enviar. Tente de novo. (${esc(up.error.message)})</div>`; return; }
+    const ok = await sb.rpc("totem_sessao_enviado", { p_token: token, p_path: path, p_nome: nomeFinal, p_tipo: arq.tipo, p_bytes: f.size });
+    clearInterval(iv);
+    if (ok.error || ok.data !== true) { input.disabled = false; msg.innerHTML = `<div class="msg bad">O QR Code expirou durante o envio. Gere um novo no totem.</div>`; return; }
+    app.innerHTML = `<div class="done"><div class="ring"><svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 29l9 9 19-20"/></svg></div>
+      <h1>Arquivo enviado!</h1><p><b>${esc(nomeFinal)}</b><br>Agora continue na tela do totem.</p></div>`;
+  };
+})();
+</script>
+</body>
+</html>
