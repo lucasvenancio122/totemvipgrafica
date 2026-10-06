@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
@@ -57,7 +58,7 @@ main{padding:28px 32px;overflow:auto;min-height:0}
 .eyebrow{font-size:13px;text-transform:uppercase;letter-spacing:.09em;font-weight:700;color:var(--mag)}
 .lead{color:var(--muted);margin:6px 0 0;max-width:62ch}
 h2{font-size:clamp(26px,3.2vw,34px)}
-.screen>div:first-child:has(h2){border-left:5px solid var(--mag);border-radius:3px;padding-left:18px}
+.screen>div:first-child:not(.done):has(h2){border-left:5px solid var(--mag);border-radius:3px;padding-left:18px}
 
 .bar{display:flex;gap:12px;align-items:center;padding:16px 24px;border-top:1px solid var(--line);background:var(--panel-2);flex-wrap:wrap}
 .bar .spacer{flex:1}
@@ -335,7 +336,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   // ---------- configuração (provisória; no app real vem da tabela totem_precos) ----------
-  const DEFAULT_CFG = { precos: { A4: { pb: 0.5, cor: 2 }, A3: { pb: 1.5, cor: 4 } }, a3Ativo: false, limite: 50, inatividade: 120 };
+  const DEFAULT_CFG = { precos: { A4: { pb: 0.5, cor: 2 }, A3: { pb: 1.5, cor: 4 } }, a3Ativo: false, limite: 50, inatividade: 120, codigos: "1234" };
   const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } };
   const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
   let cfg = Object.assign(structuredClone(DEFAULT_CFG), load("totem.cfg", {}));
@@ -347,7 +348,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
 
   // ---------- estado do pedido ----------
   let tela = "inicio", pedido = null, timers = [];
-  const novoPedido = () => ({ arquivo: null, origem: "qr", tamanho: "A4", cor: "pb", lados: "frente", copias: 1, de: 1, ate: 1, metodo: null, inicio: Date.now() });
+  const novoPedido = () => ({ encaixe: "ajustar", arquivo: null, origem: "qr", tamanho: "A4", cor: "pb", lados: "frente", copias: 1, de: 1, ate: 1, metodo: null, inicio: Date.now() });
   const clearTimers = () => { timers.forEach(t => { clearTimeout(t); clearInterval(t); }); timers = []; };
 
   function calc(p = pedido) {
@@ -366,7 +367,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
   let ultimoToque = Date.now();
   ["pointerdown", "keydown"].forEach(ev => document.addEventListener(ev, () => { ultimoToque = Date.now(); }, true));
   setInterval(() => {
-    if (tela === "inicio" || tela === "impressao" || tela === "login" || $("#layer .modal")) return;
+    if (["inicio", "impressao", "login", "travado"].includes(tela) || $("#layer .modal")) return;
     if ((Date.now() - ultimoToque) / 1000 > cfg.inatividade) avisoInatividade();
   }, 1000);
   function avisoInatividade() {
@@ -417,15 +418,24 @@ h2{font-size:clamp(30px,3.6vw,42px)}
   }
   async function ponteImprimir(p, c) {
     const a = p.arquivo;
-    if (a.fake) throw new Error("arquivo de exemplo");
-    const blob = await (await fetch(a.url)).blob();
-    const tipo = a.tipo === "pdf" ? "pdf" : (blob.type === "image/png" ? "png" : "jpg");
-    const q = new URLSearchParams({ tipo, copias: p.copias, cor: p.cor, lados: p.lados, paginas: a.tipo === "pdf" ? `${c.de}-${c.ate}` : "" });
-    const r = await fetch(`${PONTE}/imprimir?${q}`, { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: blob });
+    let corpo, q;
+    if (p.final) {
+      corpo = new Blob([p.final.data], { type: "application/pdf" });
+      q = { tipo: "pdf", copias: p.copias, cor: p.cor, lados: p.lados, escala: "noscale", paginas: "" };
+    } else {
+      corpo = await (await fetch(a.url)).blob();
+      q = { tipo: a.tipo === "pdf" ? "pdf" : (corpo.type === "image/png" ? "png" : "jpg"), copias: p.copias, cor: p.cor, lados: p.lados,
+            escala: p.encaixe === "real" ? "noscale" : "fit", paginas: a.tipo === "pdf" ? `${c.de}-${c.ate}` : "" };
+    }
+    const r = await fetch(`${PONTE}/imprimir?${new URLSearchParams(q)}`, { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: corpo });
     const j = await r.json().catch(() => ({}));
-    if (!r.ok || !j.ok) throw new Error(j.erro || "falha na impressão");
-    return j;
+    if (!r.ok || !j.ok) { const e = new Error(j.erro || "falha na impressão"); e.problema = !!j.problema; throw e; }
+    return j.id;
   }
+  async function ponteTrabalho(id) {
+    try { const r = await fetch(`${PONTE}/trabalho?id=${encodeURIComponent(id)}`); return await r.json(); } catch { return null; }
+  }
+  async function ponteCancelar(id) { try { await fetch(`${PONTE}/cancelar?id=${encodeURIComponent(id)}`, { method: "POST" }); } catch {} }
 
   const ICON = {
     qr: `<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="14" height="14" rx="2"/><rect x="26" y="4" width="14" height="14" rx="2"/><rect x="4" y="26" width="14" height="14" rx="2"/><path d="M26 26h6v6h-6zM36 26h4M26 38h4M34 34h6v6" /></svg>`,
@@ -450,6 +460,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
       </section>`;
       barra(`<button class="btn ghost" id="admin">Equipe</button><span class="spacer"></span>`);
       $("#go").onclick = () => { pedido = novoPedido(); ir("envio"); };
+      if (sb) sb.auth.getSession().then(r => { if (r.data && r.data.session) prepararSessao(); });
       $("#admin").onclick = abrirAdmin;
     },
 
@@ -502,6 +513,10 @@ h2{font-size:clamp(30px,3.6vw,42px)}
             <div class="opt"><span>Cópias</span><div class="stepper">
               <button id="menos" aria-label="Menos uma cópia">−</button><output id="copias">${p.copias}</output><button id="mais" aria-label="Mais uma cópia">+</button>
             </div></div>
+            <div class="opt"><span>Tamanho na folha</span><div>
+              <div class="seg">${seg("encaixe", "ajustar", "Ajustar à folha")}${seg("encaixe", "real", "Tamanho real")}</div>
+              <div class="note" style="margin-top:8px;font-size:16px">${p.encaixe === "real" ? "Sai do tamanho do arquivo. Pode ficar pequeno ou cortar as bordas." : "Aumenta ou diminui para caber inteiro na folha A4."}</div>
+            </div></div>
             ${n > 1 ? (p.faixa ? `<div class="opt"><span>Páginas</span><div class="range">
               <label for="de">da</label><input id="de" type="number" inputmode="numeric" min="1" max="${n}" value="${c.de}">
               <label for="ate">até</label><input id="ate" type="number" inputmode="numeric" min="1" max="${n}" value="${c.ate}">
@@ -536,6 +551,12 @@ h2{font-size:clamp(30px,3.6vw,42px)}
 
     previa() {
       const c = calc(), p = pedido;
+      if (!p.finalFalhou && (!p.final || p.final.key !== chaveFinal(p, c))) {
+        $("#main").innerHTML = `<section class="screen"><div class="recv"><span class="dot"></span>Preparando a prévia…</div></section>`;
+        barra(`<button class="btn" id="back">← Mudar algo</button>`); $("#back").onclick = () => ir("config");
+        montarFinal(p, c).catch(e => { console.warn(e); p.final = null; p.finalFalhou = true; }).then(() => { if (tela === "previa") TELAS.previa(); });
+        return;
+      }
       if (!p.pv || p.pv < c.de || p.pv > c.ate) p.pv = c.de;
       const nums = [];
       for (let i = c.de; i <= c.ate; i++) nums.push(i);
@@ -550,6 +571,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
           <button class="stage" id="stage" aria-label="Ver em tela cheia">
             <div class="sheet big ${cls}" id="bigsheet"></div>
             <span class="lado" id="lado" hidden></span>
+            <span class="lado" id="corte" hidden style="top:auto;bottom:14px;background:var(--bad-soft);color:var(--bad);border-color:transparent">Esta página vai sair cortada</span>
             <span class="zoomhint">⤢ Toque para ver maior</span>
           </button>
           <button class="nav" id="prox" aria-label="Próxima página">›<span>Próxima</span></button>
@@ -620,18 +642,14 @@ h2{font-size:clamp(30px,3.6vw,42px)}
           await new Promise(r => setTimeout(r, Math.min(6000, c.folhas * 600)));
           clearInterval(iv); if (tela === "impressao") concluir(c, "simulado"); return;
         }
+        if (!st.pronta) { clearInterval(iv); return travar(st.motivo); }
         try {
-          await ponteImprimir(p, c);
-          clearInterval(iv); if (tela === "impressao") concluir(c, "real");
+          p.trabalho = await ponteImprimir(p, c);
+          acompanharTrabalho(p.trabalho, c, iv);
         } catch (e) {
           clearInterval(iv);
-          p.falhaImpressao = e.message;
-          $("#main").innerHTML = `<section class="screen"><div class="done">
-            <h2>Não conseguimos imprimir</h2>
-            <p class="lead" style="margin:0">Seu pagamento está registrado. Mostre esta tela para a equipe no balcão que eles imprimem para você.</p>
-            <div class="recv bad">Motivo: ${esc(e.message)}</div></div></section>`;
-          barra(`<span class="spacer"></span><button class="btn primary" id="fim">Entendi</button>`);
-          $("#fim").onclick = reiniciar;
+          if (e.problema) return travar(e.message);
+          falhaImpressao(e.message);
         }
       })();
     }
@@ -651,6 +669,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
     if ($("#ant")) $("#ant").disabled = n <= c.de;
     if ($("#prox")) $("#prox").disabled = n >= c.ate;
     const lado = $("#lado"); if (lado) { const t = rotuloLado(n); lado.hidden = !t; lado.textContent = t; }
+    const corte = $("#corte"); if (corte) corte.hidden = !(pedido.final && pedido.final.cortes[Math.min(pedido.final.cortes.length, idx) - 1]);
     const big = $("#bigsheet");
     if (big) { big.dataset.n = n; desenharPagina(big, n, Math.min(1800, big.parentElement.clientHeight * 0.75 * (window.devicePixelRatio || 1))); }
     document.querySelectorAll(".thumb").forEach(b => {
@@ -713,15 +732,25 @@ h2{font-size:clamp(30px,3.6vw,42px)}
   const urlEnvio = t => new URL("enviar.html?t=" + t, location.href).href;
   const qrStatus = txt => { const w = $("#qrstatus"); if (w) w.textContent = txt; };
 
+  // sessão criada antes do cliente tocar em Começar: o QR aparece na hora
+  let proxima = null;
+  function criarSessao() {
+    const t = novoToken();
+    return { token: t, criada: Date.now(), pronta: sb.from("totem_sessoes").insert({ token: t }).then(r => !r.error, () => false) };
+  }
+  function prepararSessao() {
+    if (!sb) return;
+    if (proxima && Date.now() - proxima.criada < 40 * 60000) return;
+    proxima = criarSessao();
+  }
   async function iniciarSessao() {
     if (!sb) { qrStatus("Envio por QR não configurado (config.js)"); return; }
     if (!pedido) return;
     if (!pedido.token) {
-      const t = novoToken();
-      const { error } = await sb.from("totem_sessoes").insert({ token: t });
-      if (error) { qrStatus("Não foi possível gerar o QR. Verifique a internet."); return; }
-      if (!pedido) { sb.from("totem_sessoes").delete().eq("token", t); return; }
-      pedido.token = t;
+      let ses = proxima; proxima = null;
+      if (!ses) ses = criarSessao();
+      pedido.token = ses.token;
+      ses.pronta.then(ok => { if (!ok && pedido && pedido.token === ses.token) qrStatus("Não foi possível gerar o QR. Verifique a internet."); });
     }
     const t = pedido.token;
     const box = $("#qr");
@@ -737,7 +766,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
     const poll = setInterval(async () => {
       const { data } = await sb.from("totem_sessoes").select("*").eq("token", t).maybeSingle();
       if (data) tratarSessao(data);
-    }, 4000);
+    }, 2000);
     sessaoAtiva = { token: t, ch, poll };
   }
   function tratarSessao(row) {
@@ -807,7 +836,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
 
   function aceitar(arq) {
     pedido.arquivo = arq;
-    pedido.avancou = false; pedido.faixa = false; pedido.pv = null;
+    pedido.avancou = false; pedido.faixa = false; pedido.pv = null; pedido.final = null; pedido.finalFalhou = false;
     pedido.de = 1; pedido.ate = arq.paginas;
     if (arq.paginas > cfg.limite) pedido.ate = cfg.limite;
     ir("envio");
@@ -834,26 +863,81 @@ h2{font-size:clamp(30px,3.6vw,42px)}
     }
   }
 
-  async function desenharPagina(el, n, larg = 260) {
-    const a = pedido.arquivo;
-    if (a.fake) {
-      const linhas = 9 + (n * 7) % 6;
-      const temCor = a.tipo === "img" || n % 3 === 1;
-      el.innerHTML = a.tipo === "img"
-        ? `<div class="fake" style="inset:8%;background:linear-gradient(160deg,#9bc6e6,#e8b7cf 60%,#f3dd8a);border-radius:2px"></div>`
-        : `<div class="fake"><i class="h"></i>${temCor ? '<i class="c"></i>' : ""}${"<i></i>".repeat(linhas)}</div>`;
-      return;
-    }
-    if (a.tipo === "img") { el.innerHTML = `<img alt="" src="${a.url}">`; return; }
+  // ---------- arquivo final A4 (o que aparece na prévia é exatamente o que vai para a impressora) ----------
+  const A4PT = [595.28, 841.89], MARGEM = 14; // margem de ~5 mm (a impressora não imprime até a borda)
+  const chaveFinal = (p, c) => [p.arquivo.url, c.de, c.ate, p.encaixe].join("|");
+  function dpiImagem(b, png) {
     try {
-      const page = await a.doc.getPage(n);
+      if (png) {
+        for (let i = 8; i < b.length - 12;) {
+          const len = ((b[i] << 24) | (b[i + 1] << 16) | (b[i + 2] << 8) | b[i + 3]) >>> 0;
+          const tipo = String.fromCharCode(b[i + 4], b[i + 5], b[i + 6], b[i + 7]);
+          if (tipo === "pHYs") { const ppm = ((b[i + 8] << 24) | (b[i + 9] << 16) | (b[i + 10] << 8) | b[i + 11]) >>> 0; return b[i + 16] === 1 ? ppm * 0.0254 : 0; }
+          if (tipo === "IDAT") return 0;
+          i += 12 + len;
+        }
+      } else if (b[2] === 0xFF && b[3] === 0xE0 && b[6] === 0x4A && b[7] === 0x46) {
+        const un = b[13], x = (b[14] << 8) | b[15];
+        return un === 1 ? x : un === 2 ? x * 2.54 : 0;
+      }
+    } catch {}
+    return 0;
+  }
+  async function montarFinal(p, c) {
+    const key = chaveFinal(p, c);
+    if (p.final && p.final.key === key) return p.final;
+    const { PDFDocument, degrees } = PDFLib;
+    const bytes = new Uint8Array(await (await fetch(p.arquivo.url)).arrayBuffer());
+    const out = await PDFDocument.create();
+    const cortes = [];
+    const colocar = (w, h, desenhar) => {
+      const deitado = w > h * 1.02;
+      const [PW, PH] = deitado ? [A4PT[1], A4PT[0]] : A4PT;
+      const pg = out.addPage([PW, PH]);
+      const s = p.encaixe === "real" ? 1 : Math.min((PW - 2 * MARGEM) / w, (PH - 2 * MARGEM) / h);
+      const dw = w * s, dh = h * s;
+      cortes.push(dw > PW + 2 || dh > PH + 2);
+      desenhar(pg, (PW - dw) / 2, (PH - dh) / 2, s);
+    };
+    if (p.arquivo.tipo === "img") {
+      const png = bytes[0] === 0x89;
+      const img = png ? await out.embedPng(bytes) : await out.embedJpg(bytes);
+      let dpi = dpiImagem(bytes, png); if (!dpi || dpi < 50) dpi = 96;
+      const w = img.width * 72 / dpi, h = img.height * 72 / dpi;
+      colocar(w, h, (pg, x, y, s) => pg.drawImage(img, { x, y, width: w * s, height: h * s }));
+    } else {
+      const src = await PDFDocument.load(bytes, { ignoreEncryption: true });
+      const pags = []; for (let i = c.de; i <= c.ate; i++) pags.push(src.getPage(i - 1));
+      const emb = await out.embedPages(pags);
+      emb.forEach((e, k) => {
+        const r = ((pags[k].getRotation().angle % 360) + 360) % 360;
+        const W = e.width, H = e.height;
+        colocar(r % 180 ? H : W, r % 180 ? W : H, (pg, x0, y0, s) => {
+          const sw = W * s, sh = H * s; let ax = x0, ay = y0;
+          if (r === 90) { ay = y0 + sw; } else if (r === 180) { ax = x0 + sw; ay = y0 + sh; } else if (r === 270) { ax = x0 + sh; }
+          pg.drawPage(e, { x: ax, y: ay, width: sw, height: sh, rotate: degrees(-r) });
+        });
+      });
+    }
+    const data = await out.save();
+    const doc = await pdfjsLib.getDocument({ data: data.slice() }).promise;
+    p.final = { key, data, doc, cortes };
+    return p.final;
+  }
+
+  async function desenharPagina(el, n, larg = 260) {
+    const a = pedido.arquivo, c = calc(), fin = pedido.final;
+    try {
+      let page;
+      if (fin) page = await fin.doc.getPage(Math.min(fin.doc.numPages, n - c.de + 1));
+      else if (a.tipo === "img") { el.innerHTML = `<img alt="" src="${a.url}">`; return; }
+      else page = await a.doc.getPage(n);
       const vp1 = page.getViewport({ scale: 1 });
-      const scale = Math.max(80, larg) / vp1.width;
-      const vp = page.getViewport({ scale });
+      const vp = page.getViewport({ scale: Math.max(80, larg) / vp1.width });
       const cv = document.createElement("canvas");
       cv.width = vp.width; cv.height = vp.height;
       await page.render({ canvasContext: cv.getContext("2d"), viewport: vp }).promise;
-      if (el.isConnected && (!el.dataset.n || +el.dataset.n === n)) { el.innerHTML = ""; el.appendChild(cv); }
+      if (el.isConnected && (!el.dataset.n || +el.dataset.n === n)) { el.innerHTML = ""; el.style.aspectRatio = `${vp1.width} / ${vp1.height}`; el.appendChild(cv); }
     } catch { el.textContent = "Pág. " + n; }
   }
 
@@ -895,6 +979,102 @@ h2{font-size:clamp(30px,3.6vw,42px)}
     const area = $("#payarea");
     if (area) area.innerHTML = `<h3>O código Pix expirou</h3><p class="note">Nada foi cobrado.</p><button class="btn primary" id="novo">Gerar novo código</button>`;
     const b = $("#novo"); if (b) b.onclick = () => ir("pagamento");
+  }
+
+  // ---------- acompanhamento da impressão e trava ----------
+  function acompanharTrabalho(id, c, iv) {
+    const t = setInterval(async () => {
+      if (tela !== "impressao") { clearInterval(t); return; }
+      const j = await ponteTrabalho(id);
+      if (!j) return; // ponte não respondeu agora; tenta de novo
+      if (j.status === "concluido") { clearInterval(t); clearInterval(iv); const b = $("#imp-bar"); if (b) b.style.width = "100%"; concluir(c, "real"); }
+      else if (j.status === "problema") { clearInterval(t); clearInterval(iv); travar(j.motivo); }
+      else if (j.status === "erro" || j.status === "cancelado" || j.ok === false) { clearInterval(t); clearInterval(iv); falhaImpressao(j.motivo || j.erro || "falha na impressão"); }
+    }, 1000);
+    timers.push(t);
+  }
+  function falhaImpressao(msg) {
+    travar(msg || "falha na impressão");
+  }
+  const LOCK = "totem.trava";
+  function travar(motivo, restaurado) {
+    clearTimers();
+    tela = "travado";
+    $("#layer").innerHTML = "";
+    const p = pedido;
+    const info = restaurado || {
+      motivo, quando: Date.now(), trabalho: p && p.trabalho,
+      resumo: p && p.arquivo ? `${p.arquivo.nome} · ${calc().folhas} folha(s) · ${BRL(calc().total)}` : ""
+    };
+    save(LOCK, info);
+    $("#steps").hidden = true; $("#hint").hidden = false; $("#hint").textContent = "Totem parado: aguardando uma vendedora";
+    $("#main").innerHTML = `<section class="screen"><div class="done">
+      <div class="ring" style="background:var(--bad-soft);color:var(--bad);font-size:64px;font-weight:800">!</div>
+      <h2>A impressão parou: ${esc(info.motivo)}</h2>
+      <p class="lead" style="margin:0;font-size:24px">Seu pagamento está garantido.<br><b>Por favor, chame uma vendedora no balcão.</b></p>
+      <form id="libform" class="card" style="width:min(440px,100%);text-align:left">
+        <label for="codv" style="font-weight:700">Código da vendedora</label>
+        <input id="codv" type="password" inputmode="numeric" autocomplete="off" style="height:64px;border-radius:12px;border:2px solid var(--line);font-size:28px;text-align:center;letter-spacing:.3em;font-family:var(--f-body)">
+        <button class="btn primary" type="submit">Liberar</button>
+        <div id="codmsg"></div>
+      </form>
+      ${info.resumo ? `<p class="note" style="margin:0">Pedido: ${esc(info.resumo)}</p>` : ""}
+    </div></section>`;
+    barra(`<span class="note">Totem travado para nenhum outro cliente usar até a vendedora liberar.</span>`);
+    $("#libform").onsubmit = e => {
+      e.preventDefault();
+      const cod = $("#codv").value.trim();
+      const validos = String(cfg.codigos || "").split(",").map(x => x.trim()).filter(Boolean);
+      if (cod && validos.includes(cod)) painelVendedora(info, cod);
+      else { $("#codmsg").innerHTML = `<div class="recv bad" style="font-size:17px">Código incorreto.</div>`; $("#codv").value = ""; }
+    };
+  }
+  function painelVendedora(info, cod) {
+    const p = pedido;
+    const podeReimprimir = !!(p && p.arquivo && p.trabalho !== undefined);
+    $("#main").innerHTML = `<section class="screen" style="max-width:820px">
+      <div><div class="eyebrow">Vendedora</div><h2>O que fazer com este pedido?</h2>
+      <p class="lead">Motivo da parada: <b>${esc(info.motivo)}</b>${info.resumo ? `<br>Pedido: ${esc(info.resumo)}` : ""}</p></div>
+      <div class="recv" id="vstatus"><span class="dot"></span>Verificando a impressora…</div>
+      <div style="display:grid;gap:14px">
+        ${info.trabalho ? `<button class="btn primary" id="v-cont">Coloquei o papel: continuar a impressão</button>` : ""}
+        ${podeReimprimir ? `<button class="btn" id="v-re">Cancelar o que ficou e imprimir o pedido de novo</button>` : ""}
+        <button class="btn" id="v-fim">Já entreguei as folhas: finalizar e liberar o totem</button>
+      </div>
+      <p class="note" style="margin:0">A impressora costuma continuar sozinha depois que o papel é colocado. Confira as folhas que saíram antes de escolher.</p>
+    </section>`;
+    barra(`<span class="note">Liberado pelo código ${esc(cod.replace(/.(?=.{2})/g, "•"))}</span>`);
+    const atualizar = async () => {
+      const el = $("#vstatus"); if (!el) return;
+      const st = await ponteStatus(); const j = info.trabalho ? await ponteTrabalho(info.trabalho) : null;
+      if (!$("#vstatus")) return;
+      if (!st) { el.className = "recv bad"; el.textContent = "Ponte de impressão não responde (janela preta fechada?)"; return; }
+      const txt = j && j.ok ? ({ imprimindo: "imprimindo", enviando: "enviando", problema: "parada: " + j.motivo, concluido: "concluída", cancelado: "cancelada", erro: "com erro" })[j.status] : "sem informação";
+      el.className = "recv " + (st.pronta && (!j || j.status !== "problema") ? "ok" : "bad");
+      el.textContent = `Impressora: ${st.pronta ? "pronta" : st.motivo} · Este pedido: ${txt}`;
+    };
+    atualizar(); timers.push(setInterval(atualizar, 2000));
+    const registrar = acao => { historico.unshift({ modo: "real", quando: Date.now(), arquivo: info.resumo || "(pedido)", origem: "qr", paginas: 0, folhas: 0, valor: 0, metodo: "-", cfg: `PARADA: ${info.motivo} → ${acao} (cód. ${cod})`, segundos: 0 }); save("totem.hist", historico); };
+    const sair = () => { try { localStorage.removeItem(LOCK); } catch {} $("#hint").textContent = 'Toque em "Começar" para imprimir'; };
+    if ($("#v-cont")) $("#v-cont").onclick = () => {
+      registrar("continuar"); sair(); clearTimers();
+      if (!p || !p.arquivo) { reiniciar(); return; }
+      tela = "impressao"; const c = calc();
+      $("#main").innerHTML = `<section class="screen"><div class="done"><h2>Continuando a impressão…</h2><div class="progress"><div id="imp-bar" style="width:50%"></div></div><div class="tray" aria-hidden="true"></div></div></section>`;
+      barra(`<span class="spacer"></span>`);
+      const iv = setInterval(() => {}, 100000); timers.push(iv);
+      acompanharTrabalho(info.trabalho, c, iv);
+    };
+    if ($("#v-re")) $("#v-re").onclick = async () => {
+      registrar("reimprimir"); sair();
+      if (info.trabalho) await ponteCancelar(info.trabalho);
+      ir("impressao");
+    };
+    $("#v-fim").onclick = async () => {
+      registrar("finalizar"); sair();
+      if (info.trabalho) await ponteCancelar(info.trabalho);
+      reiniciar();
+    };
   }
 
   // ---------- conclusão ----------
@@ -957,6 +1137,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
       </div>
       <div class="fields">
         <div class="field"><label for="lim">Limite de páginas por pedido</label><input id="lim" type="number" min="1" value="${cfg.limite}"></div>
+        <div class="field"><label for="cods">Códigos das vendedoras (separe por vírgula)</label><input id="cods" type="text" inputmode="numeric" value="${esc(cfg.codigos || "")}" style="font-family:var(--f-body)"></div>
         <div class="field"><label for="ina">Inatividade até cancelar (s)</label><input id="ina" type="number" min="30" value="${cfg.inatividade}"></div>
       </div>
       <label class="toggle"><input type="checkbox" id="a3on" ${cfg.a3Ativo ? "checked" : ""}> Liberar A3 no totem</label>
@@ -977,6 +1158,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
     $("#salvar").onclick = () => {
       cfg.precos = { A4: { pb: num("#a4pb", pr.A4.pb), cor: num("#a4cor", pr.A4.cor) }, A3: { pb: num("#a3pb", pr.A3.pb), cor: num("#a3cor", pr.A3.cor) } };
       cfg.limite = Math.max(1, Math.round(num("#lim", cfg.limite)));
+      cfg.codigos = $("#cods").value.split(",").map(x => x.replace(/\D/g, "")).filter(Boolean).join(",") || cfg.codigos;
       cfg.inatividade = Math.max(30, Math.round(num("#ina", cfg.inatividade)));
       cfg.a3Ativo = $("#a3on").checked;
       save("totem.cfg", cfg);
@@ -990,9 +1172,10 @@ h2{font-size:clamp(30px,3.6vw,42px)}
   }
 
   (async () => {
-    if (!sb) return ir("inicio");
+    if (!sb) { const tv = load(LOCK, null); return tv && tv.motivo ? travar(tv.motivo, tv) : ir("inicio"); }
     const { data } = await sb.auth.getSession();
-    if (data && data.session) ir("inicio"); else telaLogin();
+    const trava = load(LOCK, null);
+    if (data && data.session) { if (trava && trava.motivo) travar(trava.motivo, trava); else ir("inicio"); } else telaLogin();
   })();
 })();
 </script>
