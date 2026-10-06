@@ -408,6 +408,25 @@ h2{font-size:clamp(30px,3.6vw,42px)}
   }
   function barra(html) { $("#bar").innerHTML = html; }
 
+  // ---------- ponte de impressão (programa no computador do totem) ----------
+  const PONTE = "http://127.0.0.1:9123";
+  async function ponteStatus() {
+    const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 2500);
+    try { const r = await fetch(PONTE + "/status", { signal: ac.signal }); return await r.json(); }
+    catch { return null; } finally { clearTimeout(t); }
+  }
+  async function ponteImprimir(p, c) {
+    const a = p.arquivo;
+    if (a.fake) throw new Error("arquivo de exemplo");
+    const blob = await (await fetch(a.url)).blob();
+    const tipo = a.tipo === "pdf" ? "pdf" : (blob.type === "image/png" ? "png" : "jpg");
+    const q = new URLSearchParams({ tipo, copias: p.copias, cor: p.cor, lados: p.lados, paginas: a.tipo === "pdf" ? `${c.de}-${c.ate}` : "" });
+    const r = await fetch(`${PONTE}/imprimir?${q}`, { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: blob });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.ok) throw new Error(j.erro || "falha na impressão");
+    return j;
+  }
+
   const ICON = {
     qr: `<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="14" height="14" rx="2"/><rect x="26" y="4" width="14" height="14" rx="2"/><rect x="4" y="26" width="14" height="14" rx="2"/><path d="M26 26h6v6h-6zM36 26h4M26 38h4M34 34h6v6" /></svg>`,
     pix: `<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 4l9 9-9 9-9-9zM22 22l9 9-9 9-9-9zM4 22l9-9 9 9-9 9zM22 22l9-9 9 9-9 9z" stroke-linejoin="round"/></svg>`,
@@ -574,6 +593,10 @@ h2{font-size:clamp(30px,3.6vw,42px)}
       document.querySelectorAll(".choice").forEach(b => b.onclick = () => { p.metodo = b.dataset.m; ir("pagamento"); });
       if (m) areaPagamento(m, c);
       barra(`<button class="btn" id="back">← Voltar</button><span class="spacer"></span><span class="note">A impressão começa só depois do pagamento aprovado.</span>`);
+      ponteStatus().then(st => {
+        if (tela !== "pagamento" || !st || st.pronta) return;
+        $(".paywrap").innerHTML = `<div class="recv bad" style="grid-column:1/-1">A impressora está indisponível agora (${esc(st.motivo)}). Nada foi cobrado. Por favor, fale com a equipe no balcão.</div>`;
+      });
       $("#back").onclick = () => { p.metodo = null; ir("previa"); };
     },
 
@@ -582,20 +605,35 @@ h2{font-size:clamp(30px,3.6vw,42px)}
       $("#main").innerHTML = `<section class="screen"><div class="done">
         <div class="eyebrow">Passo 5 de 5</div>
         <h2 id="imp-t">Imprimindo…</h2>
-        <p class="lead" id="imp-s" style="margin:0">Folha <span class="mono" id="imp-n">0</span> de ${c.folhas}</p>
-        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${c.folhas}"><div id="imp-bar"></div></div>
+        <p class="lead" id="imp-s" style="margin:0">${c.folhas} ${c.folhas > 1 ? "folhas" : "folha"}. Aguarde um momento.</p>
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div id="imp-bar"></div></div>
         <div class="tray" aria-hidden="true"></div>
       </div></section>`;
       barra(`<span class="spacer"></span><span class="note">Pagamento aprovado · ${BRL(c.total)}</span>`);
-      let n = 0;
-      const passo = Math.max(120, Math.min(600, 6000 / c.folhas));
-      const iv = setInterval(() => {
-        n++;
-        $("#imp-n").textContent = n;
-        $("#imp-bar").style.width = (n / c.folhas * 100) + "%";
-        if (n >= c.folhas) { clearInterval(iv); concluir(c); }
-      }, passo);
+      // barra anda devagar enquanto a impressora trabalha (estimativa de 4 s por folha)
+      let pct = 0; const est = Math.max(6, c.folhas * 4);
+      const iv = setInterval(() => { pct = Math.min(92, pct + 100 / est / 2); const b = $("#imp-bar"); if (b) b.style.width = pct + "%"; }, 500);
       timers.push(iv);
+      (async () => {
+        const st = await ponteStatus();
+        if (!st) {           // sem ponte: modo de demonstração
+          await new Promise(r => setTimeout(r, Math.min(6000, c.folhas * 600)));
+          clearInterval(iv); if (tela === "impressao") concluir(c, "simulado"); return;
+        }
+        try {
+          await ponteImprimir(p, c);
+          clearInterval(iv); if (tela === "impressao") concluir(c, "real");
+        } catch (e) {
+          clearInterval(iv);
+          p.falhaImpressao = e.message;
+          $("#main").innerHTML = `<section class="screen"><div class="done">
+            <h2>Não conseguimos imprimir</h2>
+            <p class="lead" style="margin:0">Seu pagamento está registrado. Mostre esta tela para a equipe no balcão que eles imprimem para você.</p>
+            <div class="recv bad">Motivo: ${esc(e.message)}</div></div></section>`;
+          barra(`<span class="spacer"></span><button class="btn primary" id="fim">Entendi</button>`);
+          $("#fim").onclick = reiniciar;
+        }
+      })();
     }
   };
 
@@ -860,9 +898,9 @@ h2{font-size:clamp(30px,3.6vw,42px)}
   }
 
   // ---------- conclusão ----------
-  function concluir(c) {
+  function concluir(c, modo = "simulado") {
     const p = pedido;
-    historico.unshift({ quando: Date.now(), arquivo: p.arquivo.nome, origem: p.origem, paginas: c.faces, folhas: c.folhas, valor: c.total, metodo: p.metodo, cfg: `${p.tamanho} ${p.cor === "pb" ? "P&B" : "cor"} ${p.lados === "verso" ? "F/V" : "F"}`, segundos: Math.round((Date.now() - p.inicio) / 1000) });
+    historico.unshift({ modo, quando: Date.now(), arquivo: p.arquivo.nome, origem: p.origem, paginas: c.faces, folhas: c.folhas, valor: c.total, metodo: p.metodo, cfg: `${p.tamanho} ${p.cor === "pb" ? "P&B" : "cor"} ${p.lados === "verso" ? "F/V" : "F"}`, segundos: Math.round((Date.now() - p.inicio) / 1000) });
     historico = historico.slice(0, 200);
     save("totem.hist", historico);
     let s = 20;
@@ -910,6 +948,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
         <div class="stat"><small>Tempo médio</small><b>${tot.n ? fmtT(media) : "—"}</b></div>
       </div>
       <p class="note" style="margin:0">Pedidos de teste feitos neste navegador. No piloto, estes números vêm da tabela de pedidos.</p>
+      <div class="recv" id="ponteinfo" style="font-size:16px"><span class="dot"></span>Verificando a impressora…</div>
       <h3 style="font-size:18px">Preço por página (provisório)</h3>
       <div class="grid-prices">
         <span></span><span class="h">Preto e branco</span><span class="h">Colorido</span>
@@ -928,6 +967,12 @@ h2{font-size:clamp(30px,3.6vw,42px)}
         <tbody>${historico.slice(0, 15).map(h => `<tr><td>${new Date(h.quando).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</td><td>${esc(h.arquivo)}</td><td>${h.origem === "usb" ? "Pendrive" : "Celular"}</td><td>${h.cfg}</td><td class="n">${h.paginas}</td><td class="n">${BRL(h.valor)}</td><td>${met[h.metodo] || "—"}</td><td class="n">${fmtT(h.segundos)}</td></tr>`).join("")}</tbody>
       </table></div><button class="btn ghost" id="limpar">Apagar pedidos de teste</button>` : ""}
     </div></div>`;
+    ponteStatus().then(st => {
+      const el = $("#ponteinfo"); if (!el) return;
+      if (!st) { el.className = "recv"; el.textContent = "Ponte de impressão não encontrada neste computador: o totem está em modo de demonstração (não imprime)."; return; }
+      el.className = "recv " + (st.pronta ? "ok" : "bad");
+      el.textContent = st.pronta ? `Impressora pronta: ${st.impressora}` : `Impressora com problema: ${st.motivo}`;
+    });
     const num = (id, d) => { const v = parseFloat($(id).value.replace(",", ".")); return isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : d; };
     $("#salvar").onclick = () => {
       cfg.precos = { A4: { pb: num("#a4pb", pr.A4.pb), cor: num("#a4cor", pr.A4.cor) }, A3: { pb: num("#a3pb", pr.A3.pb), cor: num("#a3cor", pr.A3.cor) } };
