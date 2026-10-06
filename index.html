@@ -223,6 +223,83 @@ h2{font-size:clamp(26px,3.2vw,34px)}
   .btn{padding:0 18px}
   .bigtotal{font-size:44px}
 }
+
+/* ===== Modo fácil (idosos): letras maiores, botões grandes, menos texto ===== */
+body{font-size:19px}
+.btn{min-height:72px;font-size:21px;padding:0 32px}
+.btn.ghost{min-height:52px;font-size:16px}
+h2{font-size:clamp(30px,3.6vw,42px)}
+.lead{font-size:20px}
+.eyebrow{font-size:15px}
+.steps li{font-size:16px}
+.hint{font-size:17px!important}
+/* início */
+.hero1{display:grid;grid-template-columns:1.1fr 1fr;gap:36px;align-items:center;padding-block:12px}
+.hero1 h1{font-size:clamp(44px,6vw,80px);line-height:1}
+.hero1 h1 em{font-style:normal;color:var(--mag)}
+.hero1 .lead{font-size:24px;margin-top:16px}
+.start{min-height:260px}
+.start b{font-size:clamp(40px,4.6vw,60px)}
+.start span{font-size:20px}
+.balcao{font-size:19px}
+/* envio por QR */
+.qrstep{display:grid;grid-template-columns:auto 1fr;gap:40px;align-items:center}
+.qr.big{width:300px;height:300px;padding:16px;border-width:3px;border-color:var(--ink)}
+.qr.big img,.qr.big canvas{width:264px!important;height:264px!important}
+.howto{list-style:none;margin:0;padding:0;display:grid;gap:22px}
+.howto li{display:flex;align-items:center;gap:18px;font-size:clamp(22px,2.4vw,30px);line-height:1.25}
+.howto li i{flex:none;width:56px;height:56px;border-radius:50%;background:var(--mag);color:#fff;display:grid;place-items:center;font-style:normal;font-weight:800;font-size:26px}
+.recv{display:flex;align-items:center;gap:14px;padding:20px 24px;border-radius:16px;background:var(--panel-2);font-size:22px;font-weight:600}
+.recv.ok{background:var(--good-soft);color:var(--good)}
+.recv.bad{background:var(--bad-soft);color:var(--bad)}
+.recv .dot{width:14px;height:14px}
+/* configuração */
+.opt{grid-template-columns:230px 1fr}
+.opt>span{font-size:21px}
+.seg button{min-height:76px;min-width:150px;font-size:20px;padding:0 24px}
+.stepper button{width:76px;height:76px;font-size:34px}
+.stepper output{font-size:34px;min-width:80px}
+.range input{width:100px;height:64px;font-size:24px}
+.totalbox{background:var(--panel-2);border:1px solid var(--line);border-radius:20px;padding:28px;display:grid;gap:8px;text-align:center}
+.totalbox small{font-size:16px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted)}
+.totalbox b{font-size:clamp(44px,5vw,60px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05}
+.totalbox span{font-size:19px;color:var(--muted)}
+.linkbtn{background:none;border:0;color:var(--mag);font-weight:700;font-size:19px;text-decoration:underline;padding:8px 0;justify-self:start}
+/* prévia grande */
+.prevhead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pgcount{font-size:24px;font-weight:600;color:var(--muted)}
+.pgcount b{color:var(--ink);font-size:30px}
+.viewer{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px;align-items:center}
+.nav{width:96px;height:160px;border-radius:20px;border:2px solid var(--line);background:var(--panel);display:grid;place-items:center;align-content:center;gap:4px;font-size:54px;font-weight:700;line-height:1}
+.nav span{font-size:15px;font-weight:700}
+.nav:disabled{opacity:.3;cursor:not-allowed}
+.stage{position:relative;height:max(340px,calc(100vh - 450px));border:0;border-radius:18px;background:var(--panel-2);display:flex;align-items:center;justify-content:center;padding:18px;cursor:zoom-in}
+.stage .sheet.big{height:100%;width:auto;max-width:100%;box-shadow:0 6px 24px rgba(0,0,0,.15)}
+.zoomhint{position:absolute;right:14px;bottom:14px;background:var(--ink);color:#fff;font-size:16px;font-weight:700;padding:10px 16px;border-radius:999px;display:flex;gap:8px;align-items:center}
+.lado{position:absolute;left:14px;top:14px;background:var(--panel);border:1px solid var(--line);font-size:16px;font-weight:700;padding:8px 14px;border-radius:999px}
+.thumbs{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 10px}
+.thumb{flex:none;width:84px;border:3px solid transparent;border-radius:8px;background:none;padding:2px;display:grid;gap:4px;font-size:14px;font-weight:600;color:var(--muted)}
+.thumb[aria-current="true"]{border-color:var(--mag);color:var(--ink)}
+/* tela cheia */
+.fs{position:fixed;inset:0;z-index:20;background:#0f1117;display:grid;grid-template-rows:auto 1fr;color:#fff}
+.fs-top{display:flex;align-items:center;gap:16px;padding:16px 20px;padding-top:calc(16px + env(safe-area-inset-top,0px))}
+.fs-top .pgc{font-size:26px;font-weight:700;flex:1}
+.fs-top .btn{background:#fff;color:#16181d;border-color:#fff}
+.fs-body{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;padding:0 16px 20px;min-height:0}
+.fs-body .nav{background:#22262e;border-color:#3a3f4b;color:#fff;height:200px}
+.fs-page{height:100%;min-height:0;display:flex;align-items:center;justify-content:center}
+.fs-page .sheet{height:100%;width:auto;max-width:100%}
+@media (max-width:900px){
+  .hero1,.qrstep{grid-template-columns:1fr}
+  .qrstep{justify-items:center}
+  .opt{grid-template-columns:1fr}
+  .nav{width:64px;height:120px;font-size:40px}
+}
+@media (max-width:560px){
+  .qr.big{width:240px;height:240px}
+  .qr.big img,.qr.big canvas{width:204px!important;height:204px!important}
+  .stage{height:60vh}
+}
 </style>
 </head>
 <body>
@@ -235,7 +312,7 @@ h2{font-size:clamp(26px,3.2vw,34px)}
       <div><b>Autoatendimento</b><span>Impressão rápida</span></div>
     </div>
     <nav class="track" aria-label="Etapas do pedido">
-      <span class="hint" id="hint">Toque em "Imprimir agora" para começar</span>
+      <span class="hint" id="hint">Toque em "Começar" para imprimir</span>
       <ol class="steps" id="steps" hidden>
         <li data-s="envio"><i>1</i><span>Arquivo</span></li>
         <li data-s="config"><i>2</i><span>Configurar</span></li>
@@ -270,7 +347,7 @@ h2{font-size:clamp(26px,3.2vw,34px)}
 
   // ---------- estado do pedido ----------
   let tela = "inicio", pedido = null, timers = [];
-  const novoPedido = () => ({ arquivo: null, origem: null, tamanho: "A4", cor: "pb", lados: "frente", copias: 1, de: 1, ate: 1, metodo: null, inicio: Date.now() });
+  const novoPedido = () => ({ arquivo: null, origem: "qr", tamanho: "A4", cor: "pb", lados: "frente", copias: 1, de: 1, ate: 1, metodo: null, inicio: Date.now() });
   const clearTimers = () => { timers.forEach(t => { clearTimeout(t); clearInterval(t); }); timers = []; };
 
   function calc(p = pedido) {
@@ -289,7 +366,7 @@ h2{font-size:clamp(26px,3.2vw,34px)}
   let ultimoToque = Date.now();
   ["pointerdown", "keydown"].forEach(ev => document.addEventListener(ev, () => { ultimoToque = Date.now(); }, true));
   setInterval(() => {
-    if (tela === "inicio" || tela === "impressao" || $("#layer").firstChild) return;
+    if (tela === "inicio" || tela === "impressao" || tela === "login" || $("#layer .modal")) return;
     if ((Date.now() - ultimoToque) / 1000 > cfg.inatividade) avisoInatividade();
   }, 1000);
   function avisoInatividade() {
@@ -333,7 +410,6 @@ h2{font-size:clamp(26px,3.2vw,34px)}
 
   const ICON = {
     qr: `<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="14" height="14" rx="2"/><rect x="26" y="4" width="14" height="14" rx="2"/><rect x="4" y="26" width="14" height="14" rx="2"/><path d="M26 26h6v6h-6zM36 26h4M26 38h4M34 34h6v6" /></svg>`,
-    usb: `<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="13" y="16" width="18" height="24" rx="3"/><path d="M17 16V5h10v11M20 9h1M24 9h1"/></svg>`,
     pix: `<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 4l9 9-9 9-9-9zM22 22l9 9-9 9-9-9zM4 22l9-9 9 9-9 9zM22 22l9-9 9 9-9 9z" stroke-linejoin="round"/></svg>`,
     card: `<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="10" width="36" height="24" rx="4"/><path d="M4 17h36M10 27h8"/></svg>`,
     desk: `<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 20h36v6H4zM8 26v12M36 26v12M16 20v-8a6 6 0 0 1 12 0v8"/></svg>`,
@@ -344,124 +420,133 @@ h2{font-size:clamp(26px,3.2vw,34px)}
   const TELAS = {
     inicio() {
       $("#main").innerHTML = `<section class="screen">
-        <div class="hero">
+        <div class="hero1">
           <div>
-            <div class="eyebrow">Impressão rápida, sem fila</div>
-            <h1>Imprima seu documento <em>em 2 minutos.</em></h1>
-            <p class="lead">Mande o arquivo pelo celular ou pendrive, confira a prévia, pague com Pix ou cartão e retire na bandeja.</p>
+            <h1>Imprima aqui <em>seu documento</em></h1>
+            <p class="lead">Mande o arquivo pelo celular e retire as folhas na bandeja.</p>
           </div>
-          <button class="start" id="go"><b>Imprimir agora</b><span>Toque para começar</span></button>
+          <button class="start" id="go"><b>Começar</b><span>Toque aqui</span></button>
         </div>
-        <div class="rules">
-          <div class="rule"><b>Arquivos prontos</b><span>PDF, fotos ou TXT</span></div>
-          <div class="rule"><b>Papel ${cfg.a3Ativo ? "A4 ou A3" : "A4"}</b><span>Preto e branco ou colorido</span></div>
-          <div class="rule"><b>Até ${cfg.limite} páginas</b><span>por pedido</span></div>
-          <div class="rule"><b>Arquivo apagado</b><span>logo após imprimir</span></div>
-        </div>
-        <div class="balcao">${ICON.desk.replace("<svg", '<svg width="28" height="28"')}<span>Encadernação, papel especial, arte ou pedidos grandes? <b>Fale com nossa equipe no balcão.</b></span></div>
+        <div class="balcao">${ICON.desk.replace("<svg", '<svg width="34" height="34"')}<span>Precisa de ajuda? <b>Fale com nossa equipe no balcão.</b></span></div>
       </section>`;
-      barra(`<button class="btn ghost" id="admin">Equipe: preços e relatório</button><span class="spacer"></span><span class="note">Protótipo · pagamento e envio simulados</span>`);
+      barra(`<button class="btn ghost" id="admin">Equipe</button><span class="spacer"></span>`);
       $("#go").onclick = () => { pedido = novoPedido(); ir("envio"); };
       $("#admin").onclick = abrirAdmin;
     },
 
     envio() {
-      const modo = pedido.origem;
+      const a = pedido.arquivo;
       $("#main").innerHTML = `<section class="screen">
-        <div><div class="eyebrow">Passo 1 de 5</div><h2>Como você quer enviar o arquivo?</h2></div>
-        <div class="choices">
-          <button class="choice" data-m="qr" aria-pressed="${modo === "qr"}">${ICON.qr}<b>Pelo celular</b><span>Leia o QR Code e escolha o arquivo no seu celular: PDF, fotos ou TXT. Word e Excel, salve como PDF antes.</span></button>
-          <button class="choice" data-m="usb" aria-pressed="${modo === "usb"}">${ICON.usb}<b>Pendrive</b><span>Conecte na entrada USB ao lado da tela.</span></button>
+        <div><div class="eyebrow">Passo 1 de 5</div><h2>Envie o arquivo pelo celular</h2></div>
+        <div class="qrstep">
+          <div class="qr big" id="qr"></div>
+          <ol class="howto">
+            <li><i>1</i><span>Abra a <b>câmera</b> do celular</span></li>
+            <li><i>2</i><span>Aponte para o <b>quadrado</b> ao lado</span></li>
+            <li><i>3</i><span>Toque no link e <b>escolha o arquivo</b></span></li>
+          </ol>
         </div>
-        <div id="area"></div>
+        <div id="recebido">${arquivoHTML()}</div>
       </section>`;
-      document.querySelectorAll(".choice").forEach(b => b.onclick = () => { pedido.origem = b.dataset.m; pedido.arquivo = null; if (b.dataset.m !== "qr") pararSessao(); ir("envio"); });
-      if (modo === "qr") areaQR(); else if (modo === "usb") areaUSB();
-      barra(`<button class="btn" id="back">← Início</button><span class="spacer"></span>
-        <button class="btn primary" id="next" ${pedido.arquivo ? "" : "disabled"}>Continuar →</button>`);
+      iniciarSessao();
+      barra(`<button class="btn" id="back">← Voltar</button>
+        <label class="btn ghost pick">Testar com arquivo deste computador<input type="file" id="filetest" accept="${window.TotemConversor.ACCEPT}"></label>
+        <span class="spacer"></span>
+        <button class="btn primary" id="next" ${a ? "" : "disabled"}>Continuar →</button>`);
+      $("#filetest").onchange = e => { const f = e.target.files[0]; if (f) lerArquivo(f); };
       $("#back").onclick = reiniciar;
-      $("#next").onclick = () => ir("config");
+      $("#next").onclick = () => { pedido.avancou = true; ir("config"); };
+      if (a && !pedido.avancou && !pedido.erro) timers.push(setTimeout(() => { if (pedido && tela === "envio") { pedido.avancou = true; ir("config"); } }, 2200));
     },
 
     config() {
       const c = calc();
       const p = pedido;
-      const seg = (campo, val, label, extra = "", dis = false) =>
-        `<button data-c="${campo}" data-v="${val}" aria-pressed="${p[campo] === val}" ${dis ? "disabled" : ""}>${extra}${label}</button>`;
+      const seg = (campo, val, label, extra = "") =>
+        `<button data-c="${campo}" data-v="${val}" aria-pressed="${p[campo] === val}">${extra}${label}</button>`;
       const cmyk = `<span class="cmyk" aria-hidden="true"><i style="background:#00a3e0"></i><i style="background:#e0007a"></i><i style="background:#ffd400"></i><i style="background:#16181d"></i></span>`;
       const kk = `<span class="cmyk" aria-hidden="true"><i style="background:#16181d"></i></span>`;
+      const n = p.arquivo.paginas;
       $("#main").innerHTML = `<section class="screen">
-        <div><div class="eyebrow">Passo 2 de 5</div><h2>Configure sua impressão</h2></div>
+        <div><div class="eyebrow">Passo 2 de 5</div><h2>Como você quer imprimir?</h2></div>
         <div class="cfg">
           <div class="opts">
-            <div class="opt"><span>Papel</span><div class="seg">
-              ${seg("tamanho", "A4", "A4")}
-              ${seg("tamanho", "A3", cfg.a3Ativo ? "A3" : "A3 <small>no balcão</small>", "", !cfg.a3Ativo)}
-            </div></div>
+            ${cfg.a3Ativo ? `<div class="opt"><span>Tamanho do papel</span><div class="seg">${seg("tamanho", "A4", "A4")}${seg("tamanho", "A3", "A3")}</div></div>` : ""}
             <div class="opt"><span>Cor</span><div class="seg">
-              ${seg("cor", "pb", `Preto e branco <small>${BRL(cfg.precos[p.tamanho].pb)}/pág.</small>`, kk)}
-              ${seg("cor", "cor", `Colorido <small>${BRL(cfg.precos[p.tamanho].cor)}/pág.</small>`, cmyk)}
+              ${seg("cor", "pb", "Preto e branco", kk)}
+              ${seg("cor", "cor", "Colorido", cmyk)}
             </div></div>
-            <div class="opt"><span>Lados</span><div class="seg">
+            <div class="opt"><span>Lados da folha</span><div class="seg">
               ${seg("lados", "frente", "Só frente")}
               ${seg("lados", "verso", "Frente e verso")}
             </div></div>
             <div class="opt"><span>Cópias</span><div class="stepper">
               <button id="menos" aria-label="Menos uma cópia">−</button><output id="copias">${p.copias}</output><button id="mais" aria-label="Mais uma cópia">+</button>
             </div></div>
-            ${p.arquivo.paginas > 1 ? `<div class="opt"><span>Páginas</span><div class="range">
-              <label for="de">da</label><input id="de" type="number" inputmode="numeric" min="1" max="${p.arquivo.paginas}" value="${c.de}">
-              <label for="ate">até</label><input id="ate" type="number" inputmode="numeric" min="1" max="${p.arquivo.paginas}" value="${c.ate}">
-              <span class="note">de ${p.arquivo.paginas}</span>
-            </div></div>` : ""}
+            ${n > 1 ? (p.faixa ? `<div class="opt"><span>Páginas</span><div class="range">
+              <label for="de">da</label><input id="de" type="number" inputmode="numeric" min="1" max="${n}" value="${c.de}">
+              <label for="ate">até</label><input id="ate" type="number" inputmode="numeric" min="1" max="${n}" value="${c.ate}">
+              <button class="linkbtn" id="todas">Imprimir todas</button>
+            </div></div>` : `<button class="linkbtn" id="faixa">Quero imprimir só algumas páginas</button>`) : ""}
           </div>
-          ${recibo(c)}
+          <div class="totalbox" aria-live="polite">
+            <small>Total</small>
+            <b>${BRL(c.total)}</b>
+            <span>${c.pags} ${c.pags > 1 ? "páginas" : "página"}${p.copias > 1 ? ` × ${p.copias} cópias` : ""}</span>
+            <span>${p.cor === "pb" ? "Preto e branco" : "Colorido"} · ${BRL(c.preco)} por página</span>
+          </div>
         </div>
-        ${c.acima ? `<div class="msg bad">Este pedido tem ${c.faces} páginas impressas. O limite do autoatendimento é ${cfg.limite}. Reduza as cópias ou o intervalo, ou peça no balcão.</div>` : ""}
+        ${c.acima ? `<div class="recv bad">Passou do limite de ${cfg.limite} páginas. Diminua as cópias ou peça no balcão.</div>` : ""}
       </section>`;
       document.querySelectorAll(".seg button").forEach(b => b.onclick = () => { p[b.dataset.c] = b.dataset.v; ir("config"); });
       $("#menos").onclick = () => { if (p.copias > 1) { p.copias--; ir("config"); } };
       $("#mais").onclick = () => { if (p.copias < 99) { p.copias++; ir("config"); } };
       const fixa = () => {
-        const n = p.arquivo.paginas;
         let de = parseInt($("#de").value, 10) || 1, ate = parseInt($("#ate").value, 10) || n;
         de = Math.min(Math.max(de, 1), n); ate = Math.min(Math.max(ate, de), n);
         p.de = de; p.ate = ate; ir("config");
       };
       if ($("#de")) { $("#de").onchange = fixa; $("#ate").onchange = fixa; }
+      if ($("#faixa")) $("#faixa").onclick = () => { p.faixa = true; ir("config"); };
+      if ($("#todas")) $("#todas").onclick = () => { p.faixa = false; p.de = 1; p.ate = Math.min(n, cfg.limite); ir("config"); };
       barra(`<button class="btn" id="back">← Voltar</button><span class="spacer"></span>
-        <div class="total-mini"><small>Total</small><b>${BRL(c.total)}</b></div>
-        <button class="btn primary" id="next" ${c.acima || !c.pags ? "disabled" : ""}>Ver prévia →</button>`);
+        <button class="btn primary" id="next" ${c.acima || !c.pags ? "disabled" : ""}>Ver como fica →</button>`);
       $("#back").onclick = () => ir("envio");
       $("#next").onclick = () => ir("previa");
     },
 
     previa() {
       const c = calc(), p = pedido;
-      const MAX = 11;
+      if (!p.pv || p.pv < c.de || p.pv > c.ate) p.pv = c.de;
       const nums = [];
-      for (let i = c.de; i <= c.ate && nums.length < MAX; i++) nums.push(i);
-      const resto = c.pags - nums.length;
+      for (let i = c.de; i <= c.ate; i++) nums.push(i);
+      const cls = `${p.tamanho === "A3" ? "a3" : ""} ${p.cor}`;
       $("#main").innerHTML = `<section class="screen">
-        <div><div class="eyebrow">Passo 3 de 5</div><h2>Confira antes de pagar</h2>
-          <p class="lead">É assim que vai sair. Se algo estiver errado, volte e ajuste.</p></div>
-        <div class="summary">
-          <span class="chip">${esc(p.arquivo.nome)}</span>
-          <span class="chip">${p.tamanho}</span>
-          <span class="chip">${p.cor === "pb" ? "Preto e branco" : "Colorido"}</span>
-          <span class="chip">${p.lados === "verso" ? "Frente e verso" : "Só frente"}</span>
-          <span class="chip">${p.copias} ${p.copias > 1 ? "cópias" : "cópia"}</span>
-          <span class="chip">${c.folhas} ${c.folhas > 1 ? "folhas" : "folha"}</span>
+        <div class="prevhead">
+          <div><div class="eyebrow">Passo 3 de 5</div><h2>Confira se está certo</h2></div>
+          <div class="pgcount" id="pgcount"></div>
         </div>
-        <div class="pages" id="pages">
-          ${nums.map(n => `<div class="pg"><div class="sheet ${p.tamanho === "A3" ? "a3" : ""} ${p.cor}" data-n="${n}"></div>Pág. ${n}</div>`).join("")}
-          ${resto > 0 ? `<div class="pg"><div class="more">+${resto}</div>mais páginas</div>` : ""}
+        <div class="viewer">
+          <button class="nav" id="ant" aria-label="Página anterior">‹<span>Anterior</span></button>
+          <button class="stage" id="stage" aria-label="Ver em tela cheia">
+            <div class="sheet big ${cls}" id="bigsheet"></div>
+            <span class="lado" id="lado" hidden></span>
+            <span class="zoomhint">⤢ Toque para ver maior</span>
+          </button>
+          <button class="nav" id="prox" aria-label="Próxima página">›<span>Próxima</span></button>
         </div>
+        ${nums.length > 1 ? `<div class="thumbs" id="thumbs">${nums.map(n => `<button class="thumb" data-n="${n}"><div class="sheet ${cls}" data-t="${n}"></div>${n}</button>`).join("")}</div>` : ""}
       </section>`;
-      document.querySelectorAll(".sheet").forEach(el => desenharPagina(el, +el.dataset.n));
-      barra(`<button class="btn" id="back">← Ajustar</button><span class="spacer"></span>
+      mostrarPagina(p.pv);
+      // miniaturas, uma de cada vez para não travar
+      (async () => { for (const el of document.querySelectorAll("[data-t]")) { if (tela !== "previa") return; await desenharPagina(el, +el.dataset.t, 160); } })();
+      document.querySelectorAll(".thumb").forEach(b => b.onclick = () => mostrarPagina(+b.dataset.n));
+      $("#ant").onclick = () => mostrarPagina(pedido.pv - 1);
+      $("#prox").onclick = () => mostrarPagina(pedido.pv + 1);
+      $("#stage").onclick = abrirTelaCheia;
+      barra(`<button class="btn" id="back">← Mudar algo</button><span class="spacer"></span>
         <div class="total-mini"><small>Total</small><b>${BRL(c.total)}</b></div>
-        <button class="btn primary" id="next">Ir para pagamento →</button>`);
+        <button class="btn primary" id="next">Está certo, pagar →</button>`);
       $("#back").onclick = () => ir("config");
       $("#next").onclick = () => ir("pagamento");
     },
@@ -514,6 +599,55 @@ h2{font-size:clamp(26px,3.2vw,34px)}
     }
   };
 
+  function rotuloLado(n) {
+    const c = calc(), idx = n - c.de + 1;
+    if (pedido.lados !== "verso") return "";
+    return `Folha ${Math.ceil(idx / 2)} · ${idx % 2 ? "frente" : "verso"}`;
+  }
+  function mostrarPagina(n) {
+    const c = calc();
+    n = Math.min(Math.max(n, c.de), c.ate);
+    pedido.pv = n;
+    const idx = n - c.de + 1;
+    const pc = $("#pgcount"); if (pc) pc.innerHTML = `Página <b>${idx}</b> de ${c.pags}`;
+    if ($("#ant")) $("#ant").disabled = n <= c.de;
+    if ($("#prox")) $("#prox").disabled = n >= c.ate;
+    const lado = $("#lado"); if (lado) { const t = rotuloLado(n); lado.hidden = !t; lado.textContent = t; }
+    const big = $("#bigsheet");
+    if (big) { big.dataset.n = n; desenharPagina(big, n, Math.min(1800, big.parentElement.clientHeight * 0.75 * (window.devicePixelRatio || 1))); }
+    document.querySelectorAll(".thumb").forEach(b => {
+      const on = +b.dataset.n === n; b.setAttribute("aria-current", on);
+      if (on) b.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+    });
+  }
+  function abrirTelaCheia() {
+    const c = calc(), p = pedido;
+    const cls = `${p.tamanho === "A3" ? "a3" : ""} ${p.cor}`;
+    $("#layer").innerHTML = `<div class="fs" role="dialog" aria-modal="true" aria-label="Página em tela cheia">
+      <div class="fs-top"><span class="pgc" id="fs-pgc"></span><button class="btn" id="fs-x">✕ Fechar</button></div>
+      <div class="fs-body">
+        <button class="nav" id="fs-ant" aria-label="Página anterior">‹<span>Anterior</span></button>
+        <div class="fs-page" id="fs-page"><div class="sheet ${cls}" id="fs-sheet"></div></div>
+        <button class="nav" id="fs-prox" aria-label="Próxima página">›<span>Próxima</span></button>
+      </div></div>`;
+    const ver = n => {
+      n = Math.min(Math.max(n, c.de), c.ate); p.pv = n;
+      const t = rotuloLado(n);
+      $("#fs-pgc").textContent = `Página ${n - c.de + 1} de ${c.pags}${t ? " · " + t : ""}`;
+      $("#fs-ant").disabled = n <= c.de; $("#fs-prox").disabled = n >= c.ate;
+      const el = $("#fs-sheet"); el.dataset.n = n;
+      desenharPagina(el, n, Math.min(2400, $("#fs-page").clientHeight * 0.75 * (window.devicePixelRatio || 1)));
+    };
+    $("#fs-ant").onclick = () => ver(p.pv - 1);
+    $("#fs-prox").onclick = () => ver(p.pv + 1);
+    $("#fs-x").onclick = () => { $("#layer").innerHTML = ""; mostrarPagina(p.pv); };
+    let x0 = null;
+    const pg = $("#fs-page");
+    pg.onpointerdown = e => { x0 = e.clientX; };
+    pg.onpointerup = e => { if (x0 === null) return; const dx = e.clientX - x0; x0 = null; if (dx < -60) ver(p.pv + 1); else if (dx > 60) ver(p.pv - 1); };
+    ver(p.pv);
+  }
+
   function recibo(c) {
     const p = pedido;
     return `<aside class="receipt" aria-label="Resumo do pedido">
@@ -532,13 +666,6 @@ h2{font-size:clamp(26px,3.2vw,34px)}
   }
 
   // ---------- envio ----------
-  const SAMPLES = {
-    contrato: { nome: "contrato.pdf", paginas: 8, tipo: "pdf", fake: true },
-    curriculo: { nome: "curriculo-ana-souza.pdf", paginas: 2, tipo: "pdf", fake: true },
-    boleto: { nome: "boleto-condominio.pdf", paginas: 1, tipo: "pdf", fake: true },
-    foto: { nome: "foto-3x4.jpg", paginas: 1, tipo: "img", fake: true },
-    apostila: { nome: "apostila-curso.pdf", paginas: 64, tipo: "pdf", fake: true }
-  };
   // ---------- envio real por QR: Supabase (tabela totem_sessoes + bucket totem-uploads) ----------
   const CFG = window.TOTEM_CONFIG || {};
   const sb = (window.supabase && CFG.SUPABASE_ANON_KEY && !String(CFG.SUPABASE_ANON_KEY).startsWith("COLE"))
@@ -561,9 +688,9 @@ h2{font-size:clamp(26px,3.2vw,34px)}
     const t = pedido.token;
     const box = $("#qr");
     if (box && !box.firstChild) {
-      try { new QRCode(box, { text: urlEnvio(t), width: 180, height: 180, colorDark: "#16181d", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M }); } catch {}
+      try { new QRCode(box, { text: urlEnvio(t), width: 264, height: 264, colorDark: "#16181d", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M }); } catch {}
     }
-    if (!pedido.arquivo) qrStatus("Aguardando arquivo…");
+    if (!pedido.arquivo) qrStatus("Esperando seu arquivo…");
     if (sessaoAtiva && sessaoAtiva.token === t) return;
     pararSessao();
     const ch = sb.channel("totem-" + t)
@@ -577,13 +704,13 @@ h2{font-size:clamp(26px,3.2vw,34px)}
   }
   function tratarSessao(row) {
     if (!row || !pedido || pedido.token !== row.token) return;
-    if (row.status === "conectado" && !pedido.arquivo) qrStatus("Celular conectado. Aguardando o arquivo…");
+    if (row.status === "conectado" && !pedido.arquivo) qrStatus("Celular conectado. Esperando o arquivo…");
     if (row.status === "enviado" && row.arquivo_path && pedido.recebendo !== row.arquivo_path) receberRemoto(row);
   }
   async function receberRemoto(row) {
     pedido.recebendo = row.arquivo_path;
     pedido.erro = null;
-    const rec = $("#recebido"); if (rec) rec.innerHTML = `<h3>Arquivo</h3><div class="wait"><span class="dot"></span>Recebendo ${esc(row.arquivo_nome)}…</div>`;
+    const rec = $("#recebido"); if (rec) rec.innerHTML = `<div class="recv"><span class="dot"></span>Recebendo ${esc(row.arquivo_nome)}…</div>`;
     const { data, error } = await sb.storage.from("totem-uploads").createSignedUrl(row.arquivo_path, 3600);
     if (error || !data) { pedido.erro = "Não foi possível baixar o arquivo enviado. Tente enviar de novo."; pedido.recebendo = null; return ir("envio"); }
     const url = data.signedUrl;
@@ -633,60 +760,16 @@ h2{font-size:clamp(26px,3.2vw,34px)}
   }
   async function sairTotem() { if (sb) { await sb.auth.signOut(); telaLogin(); } }
 
-  function areaQR() {
-    $("#area").innerHTML = `<div class="split">
-      <div class="card">
-        <h3>Aponte a câmera do celular</h3>
-        <div class="qrbox"><div class="qr" id="qr"></div>
-          <div style="display:grid;gap:8px"><span class="note">Abra a câmera do celular e aponte para o código. Vai aparecer um link para enviar o arquivo.</span>
-          <div class="wait"><span class="dot"></span><span id="qrstatus">${pedido.arquivo ? "Arquivo recebido" : "Gerando QR Code…"}</span></div></div>
-        </div>
-      </div>
-      <div class="card" id="recebido">${arquivoHTML()}
-        <div class="demo"><small>Só no protótipo</small>
-          <div class="row">
-                        <label class="btn sm pick">Testar com arquivo deste aparelho<input type="file" id="fileqr" accept="${window.TotemConversor.ACCEPT}"></label>
-          </div>
-        </div>
-      </div>
-    </div>`;
-    ligarDemo();
-    iniciarSessao();
-  }
-
-  function areaUSB() {
-    $("#area").innerHTML = `<div class="split">
-      <div class="card">
-        <h3>Pendrive detectado</h3>
-        <p class="note" style="margin:0">Mostramos só arquivos que podem ser impressos aqui. Toque para escolher.</p>
-        <div class="files">
-          ${["curriculo", "boleto", "foto", "apostila"].map(k => { const s = SAMPLES[k]; return `<button class="file" data-s="${k}"><span class="ext">${s.tipo === "pdf" ? "PDF" : "JPG"}</span><b>${esc(s.nome)}</b><span>${s.paginas} pág.</span></button>`; }).join("")}
-        </div>
-        <div class="demo"><small>Só no protótipo</small>
-          <label class="btn sm pick">Testar com arquivo deste aparelho<input type="file" id="fileusb" accept="${window.TotemConversor.ACCEPT}"></label>
-        </div>
-      </div>
-      <div class="card" id="recebido">${arquivoHTML()}</div>
-    </div>`;
-    ligarDemo();
-  }
-
   function arquivoHTML() {
     const a = pedido.arquivo;
-    if (pedido.erro) return `<h3>Arquivo</h3><div class="msg bad">${esc(pedido.erro)}</div>`;
-    if (!a) return `<h3>Arquivo</h3><p class="note" style="margin:0">Nenhum arquivo ainda.</p>`;
-    return `<h3>Arquivo recebido</h3><div class="msg good">${esc(a.nome)} · ${a.paginas} ${a.paginas > 1 ? "páginas" : "página"}</div>
-      ${a.paginas > cfg.limite ? `<div class="msg warn">Arquivo com mais de ${cfg.limite} páginas. Você pode imprimir só um trecho, ou pedir no balcão.</div>` : ""}`;
-  }
-
-  function ligarDemo() {
-    document.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { pedido.erro = null; aceitar(structuredClone(SAMPLES[b.dataset.s])); });
-    const inp = $("#fileqr") || $("#fileusb");
-    if (inp) inp.onchange = () => { if (inp.files[0]) lerArquivo(inp.files[0]); };
+    if (pedido.erro) return `<div class="recv bad">${esc(pedido.erro)}</div>`;
+    if (!a) return `<div class="recv"><span class="dot"></span><span id="qrstatus">Esperando seu arquivo…</span></div>`;
+    return `<div class="recv ok">✓ Arquivo recebido: ${esc(a.nome)} (${a.paginas} ${a.paginas > 1 ? "páginas" : "página"})</div>`;
   }
 
   function aceitar(arq) {
     pedido.arquivo = arq;
+    pedido.avancou = false; pedido.faixa = false; pedido.pv = null;
     pedido.de = 1; pedido.ate = arq.paginas;
     if (arq.paginas > cfg.limite) pedido.ate = cfg.limite;
     ir("envio");
@@ -694,14 +777,14 @@ h2{font-size:clamp(26px,3.2vw,34px)}
 
   async function lerArquivo(f) {
     pedido.erro = null;
-    const rec = $("#recebido"); if (rec) rec.innerHTML = `<h3>Arquivo</h3><div class="wait"><span class="dot"></span>Preparando ${esc(f.name)}…</div>`;
+    const rec = $("#recebido"); if (rec) rec.innerHTML = `<div class="recv"><span class="dot"></span>Preparando ${esc(f.name)}…</div>`;
     let arq;
     try { arq = await window.TotemConversor.normalizar(f); }
     catch (e) { pedido.erro = e.totem ? e.message : `Não foi possível ler "${f.name}".`; pedido.arquivo = null; return ir("envio"); }
     const nome = arq.nome;
     const url = URL.createObjectURL(arq.blob);
     if (arq.tipo === "img") return aceitar({ nome, paginas: 1, tipo: "img", url });
-    $("#recebido").innerHTML = `<h3>Arquivo</h3><div class="wait"><span class="dot"></span>Lendo ${esc(nome)}…</div>`;
+    $("#recebido").innerHTML = `<div class="recv"><span class="dot"></span>Lendo ${esc(nome)}…</div>`;
     try {
       if (!window.pdfjsLib) throw new Error("leitor indisponível");
       const doc = await pdfjsLib.getDocument({ url }).promise;
@@ -713,7 +796,7 @@ h2{font-size:clamp(26px,3.2vw,34px)}
     }
   }
 
-  async function desenharPagina(el, n) {
+  async function desenharPagina(el, n, larg = 260) {
     const a = pedido.arquivo;
     if (a.fake) {
       const linhas = 9 + (n * 7) % 6;
@@ -727,12 +810,12 @@ h2{font-size:clamp(26px,3.2vw,34px)}
     try {
       const page = await a.doc.getPage(n);
       const vp1 = page.getViewport({ scale: 1 });
-      const scale = 260 / vp1.width;
+      const scale = Math.max(80, larg) / vp1.width;
       const vp = page.getViewport({ scale });
       const cv = document.createElement("canvas");
       cv.width = vp.width; cv.height = vp.height;
       await page.render({ canvasContext: cv.getContext("2d"), viewport: vp }).promise;
-      if (el.isConnected) { el.innerHTML = ""; el.appendChild(cv); }
+      if (el.isConnected && (!el.dataset.n || +el.dataset.n === n)) { el.innerHTML = ""; el.appendChild(cv); }
     } catch { el.textContent = "Pág. " + n; }
   }
 
@@ -786,7 +869,7 @@ h2{font-size:clamp(26px,3.2vw,34px)}
     $("#main").innerHTML = `<section class="screen"><div class="done">
       <div class="ring">${ICON.check}</div>
       <h2>Pronto! Retire suas folhas na bandeja.</h2>
-      <p class="lead" style="margin:0">${c.folhas} ${c.folhas > 1 ? "folhas" : "folha"} ${p.tamanho} · ${BRL(c.total)} · ${p.origem === "usb" ? "Não esqueça seu pendrive." : "Obrigado pela preferência."}</p>
+      <p class="lead" style="margin:0">${c.folhas} ${c.folhas > 1 ? "folhas" : "folha"} ${p.tamanho} · ${BRL(c.total)} · Obrigado pela preferência.</p>
       <div class="checks"><div>Pagamento aprovado</div><div>Impressão concluída</div><div>Arquivo apagado do totem</div></div>
     </div></section>`;
     barra(`<span class="note">Voltando ao início em <span class="mono" id="vs">${s}</span>s</span><span class="spacer"></span><button class="btn primary" id="fim">Concluir</button>`);
