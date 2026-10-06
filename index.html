@@ -50,6 +50,7 @@ h1,h2,h3{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:balance
 .steps li.on i{background:rgba(255,255,255,.25);color:#fff}
 .steps li.done i{background:var(--good);color:#fff}
 .steps[hidden]{display:none!important}
+[hidden]{display:none!important}
 
 main{padding:28px 32px;overflow:auto;min-height:0}
 .screen{display:grid;gap:22px;animation:in .25s ease-out}
@@ -274,10 +275,24 @@ h2{font-size:clamp(30px,3.6vw,42px)}
 .nav{width:96px;height:160px;border-radius:20px;border:2px solid var(--line);background:var(--panel);display:grid;place-items:center;align-content:center;gap:4px;font-size:54px;font-weight:700;line-height:1}
 .nav span{font-size:15px;font-weight:700}
 .nav:disabled{opacity:.3;cursor:not-allowed}
-.stage{position:relative;height:max(320px,calc(100vh - 620px));border:0;border-radius:18px;background:var(--panel-2);display:flex;align-items:center;justify-content:center;padding:18px;cursor:zoom-in}
+.stage{position:relative;height:max(380px,calc(100vh - 420px));border:0;border-radius:18px;background:var(--panel-2);display:flex;align-items:center;justify-content:center;padding:18px;cursor:zoom-in}
 .stage .sheet.big{height:100%;width:auto;max-width:100%;box-shadow:0 6px 24px rgba(0,0,0,.15)}
 .zoomhint{position:absolute;right:14px;bottom:14px;background:var(--ink);color:#fff;font-size:16px;font-weight:700;padding:10px 16px;border-radius:999px;display:flex;gap:8px;align-items:center}
 .lado{position:absolute;left:14px;top:14px;background:var(--panel);border:1px solid var(--line);font-size:16px;font-weight:700;padding:8px 14px;border-radius:999px}
+.pvgrid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
+.pvside{display:grid;gap:18px;align-content:start}
+.pvside .pvsel,.pvside .pvctl{display:grid;gap:12px;justify-items:stretch;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.pvside .seg{display:grid;grid-template-columns:1fr 1fr}
+.pvside .seg button{min-width:0;padding:0 10px;font-size:18px}
+.pvside .btn{justify-content:center}
+.pvside .btn.escolha{white-space:normal;line-height:1.2;padding:10px 16px;font-size:19px;flex-direction:column;gap:2px}
+.pvside .btn.escolha small{margin:0}
+.pvside .linkbtn{justify-self:start}
+.pvside .avisocorte{flex-direction:column;align-items:stretch;font-size:16px;padding:14px 16px}
+.pvside .avisocorte div{min-width:0}
+@media (max-width:1000px){.pvgrid{grid-template-columns:1fr}}
+.avisocorte{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:18px 22px;border-radius:16px;background:var(--warn-soft);color:var(--warn);font-size:18px;border:2px solid var(--warn)}
+.avisocorte div{flex:1;min-width:260px}
 .pvsel{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .btn.escolha{min-height:76px;border-width:2px;border-color:var(--line);background:var(--panel);color:var(--muted)}
 .btn.escolha.sim{border-color:var(--good);background:var(--good-soft);color:var(--good)}
@@ -304,8 +319,9 @@ h2{font-size:clamp(30px,3.6vw,42px)}
 .fs-top .btn{background:#fff;color:#16181d;border-color:#fff}
 .fs-body{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;padding:0 16px 20px;min-height:0}
 .fs-body .nav{background:#22262e;border-color:#3a3f4b;color:#fff;height:200px}
-.fs-page{height:100%;min-height:0;display:flex;align-items:center;justify-content:center}
-.fs-page .sheet{height:100%;width:auto;max-width:100%}
+.fs-page{height:100%;min-height:0;display:flex;overflow:auto;touch-action:pan-x pan-y;border-radius:8px}
+.fs-page .sheet{margin:auto;flex:none;max-width:none;aspect-ratio:auto}
+.fs-top .btn:disabled{opacity:.4}
 @media (max-width:900px){
   .hero1,.qrstep{grid-template-columns:1fr}
   .qrstep{justify-items:center}
@@ -453,7 +469,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
     if (p.final) {
       corpo = new Blob([p.final.data], { type: "application/pdf" });
       const todas = c.sel.length === p.final.doc.numPages;
-      if (re) { const l = c.sel.filter(x => x >= re.de); q = { tipo: "pdf", copias: 1, cor: p.cor, lados: p.lados, escala: "noscale", paginas: faixaTexto(l), folhas: folhasDe(l.length, p) }; }
+      if (re) q = { tipo: "pdf", copias: 1, cor: p.cor, lados: p.lados, escala: "noscale", paginas: re.lista.join(","), folhas: re.folhas };
       else q = { tipo: "pdf", copias: p.copias, cor: p.cor, lados: p.lados, escala: "noscale", paginas: todas ? "" : faixaTexto(c.sel), folhas: c.folhas };
     } else {
       corpo = await (await fetch(a.url)).blob();
@@ -582,7 +598,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
           <div><div class="eyebrow">Passo 3 de 5</div><h2>Confira se está certo</h2></div>
           <div class="pgcount" id="pgcount"></div>
         </div>
-        <div class="viewer">
+        <div class="pvgrid"><div class="viewer">
           <button class="nav" id="ant" aria-label="Página anterior">‹<span>Anterior</span></button>
           <button class="stage" id="stage" aria-label="Ver em tela cheia">
             <div class="sheet big ${cls}" id="bigsheet"></div>
@@ -593,6 +609,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
           </button>
           <button class="nav" id="prox" aria-label="Próxima página">›<span>Próxima</span></button>
         </div>
+        <aside class="pvside">
         ${c.n > 1 ? `<div class="pvsel">
           <button class="btn escolha" id="esta"></button>
           <span class="pvconta" id="pvconta"></span>
@@ -604,13 +621,14 @@ h2{font-size:clamp(30px,3.6vw,42px)}
             <button data-enc="ajustar" aria-pressed="${p.encaixe !== "real"}">Ajustar à folha</button>
             <button data-enc="real" aria-pressed="${p.encaixe === "real"}">Tamanho real</button>
           </div>
-          <button class="btn" id="girar"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>Girar</button>
+          <button class="btn" id="girar"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>Girar a página</button>
         </div>
+        </aside></div>
         ${nums.length > 1 ? `<div class="thumbs" id="thumbs">${nums.map(n => `<button class="thumb" data-n="${n}"><div class="sheet ${cls}" data-t="${n}"></div><span class="tk"></span>${n}</button>`).join("")}</div>` : ""}
       </section>`;
       mostrarPagina(p.pv);
       // miniaturas, uma de cada vez para não travar
-      (async () => { for (const el of document.querySelectorAll("[data-t]")) { if (tela !== "previa") return; await desenharPagina(el, +el.dataset.t, 160); } })();
+      (async () => { for (const el of document.querySelectorAll("[data-t]")) { if (tela !== "previa") return; await desenharPagina(el, +el.dataset.t, { w: 84, h: 120 }, 1.3); } })();
       document.querySelectorAll(".thumb").forEach(b => b.onclick = () => mostrarPagina(+b.dataset.n));
       $("#ant").onclick = () => mostrarPagina(pedido.pv - 1);
       $("#prox").onclick = () => mostrarPagina(pedido.pv + 1);
@@ -623,7 +641,19 @@ h2{font-size:clamp(30px,3.6vw,42px)}
         <div class="total-mini"><small>Total</small><b id="pvtotal"></b></div>
         <button class="btn primary" id="next">Está certo, pagar →</button>`);
       $("#back").onclick = () => ir("config");
-      $("#next").onclick = () => ir("pagamento");
+      $("#next").onclick = () => {
+        const cc = calc(), cort = p.final && p.encaixe === "real" ? cc.sel.filter(x => p.final.cortes[x - 1]) : [];
+        if (!cort.length) return ir("pagamento");
+        $("#layer").innerHTML = `<div class="overlay"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="cort-t">
+          <h3 id="cort-t">Vai sair cortado</h3>
+          <p class="lead" style="margin:0">No tamanho real, ${cort.length > 1 ? `${cort.length} páginas ficam maiores` : "a página fica maior"} que a folha A4. As bordas não vão aparecer no papel.</p>
+          <div style="display:grid;gap:12px">
+            <button class="btn primary" id="cort-aj">Usar Ajustar à folha (recomendado)</button>
+            <button class="btn" id="cort-ok">Imprimir cortado mesmo assim</button>
+          </div></div></div>`;
+        $("#cort-aj").onclick = () => { $("#layer").innerHTML = ""; p.encaixe = "ajustar"; ir("previa"); };
+        $("#cort-ok").onclick = () => { $("#layer").innerHTML = ""; ir("pagamento"); };
+      };
       atualizarEscolha();
     },
 
@@ -679,7 +709,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
         }
         if (!st.pronta) { clearInterval(iv); return travar(st.motivo); }
         try {
-          p.ultimaQtd = p.reimpressao ? folhasDe(c.sel.filter(x => x >= p.reimpressao.de).length, p) : c.folhas;
+          p.ultimaQtd = p.reimpressao ? p.reimpressao.folhas : c.folhas;
           p.trabalho = await ponteImprimir(p, c);
           acompanharTrabalho(p.trabalho, c, iv);
         } catch (e) {
@@ -710,6 +740,17 @@ h2{font-size:clamp(30px,3.6vw,42px)}
     const nx = $("#next");
     if (nx) nx.disabled = !c.pags || c.acima;
     const lado = $("#lado"); if (lado) { const t = rotuloLado(p.pv); lado.hidden = !t; lado.textContent = t; }
+    // tamanho real: avisa quais páginas não cabem e sugere Ajustar à folha
+    const cort = p.final && p.encaixe === "real" ? c.sel.filter(x => p.final.cortes[x - 1]) : [];
+    let ac = $("#avisocorte");
+    if (cort.length && !ac && $(".pvctl")) {
+      $(".pvctl").insertAdjacentHTML("afterend", `<div class="avisocorte" id="avisocorte"><div><b>Atenção: no tamanho real ${cort.length > 1 ? "estas páginas ficam maiores" : "esta página fica maior"} que a folha A4 e ${cort.length > 1 ? "vão" : "vai"} sair com partes cortadas.</b>
+        <span id="avisocorte-pgs"></span> Sugestão: use <b>Ajustar à folha</b>, que diminui só o necessário para caber inteiro.</div>
+        <button class="btn primary" id="usarajuste">Usar Ajustar à folha</button></div>`);
+      $("#usarajuste").onclick = () => { p.encaixe = "ajustar"; ir("previa"); };
+      ac = $("#avisocorte");
+    }
+    if (ac) { if (!cort.length) ac.remove(); else $("#avisocorte-pgs").textContent = c.n > 1 ? `(${cort.length > 8 ? cort.length + " páginas" : "página" + (cort.length > 1 ? "s " : " ") + cort.join(", ")})` : ""; }
     const aviso = $("#pvaviso");
     if (c.acima && !aviso && $(".pvsel")) $(".pvsel").insertAdjacentHTML("afterend", `<div class="recv bad" id="pvaviso">Passou do limite de ${cfg.limite} páginas. Desmarque algumas ou peça no balcão.</div>`);
     if (!c.acima && aviso) aviso.remove();
@@ -730,7 +771,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
     const lado = $("#lado"); if (lado) { const t = rotuloLado(n); lado.hidden = !t; lado.textContent = t; }
     const corte = $("#corte"); if (corte) corte.hidden = !(pedido.final && pedido.final.cortes[Math.min(pedido.final.cortes.length, n) - 1]);
     const big = $("#bigsheet");
-    if (big) { big.dataset.n = n; desenharPagina(big, n, Math.min(1800, big.parentElement.clientHeight * 0.75 * (window.devicePixelRatio || 1))); }
+    if (big) { big.dataset.n = n; const st = big.parentElement; desenharPagina(big, n, { w: st.clientWidth - 36, h: st.clientHeight - 36 }, 1.8); }
     document.querySelectorAll(".thumb").forEach(b => {
       const on = +b.dataset.n === n; b.setAttribute("aria-current", on);
       if (on) b.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
@@ -740,28 +781,49 @@ h2{font-size:clamp(30px,3.6vw,42px)}
   function abrirTelaCheia() {
     const c = calc(), p = pedido;
     const cls = `${p.tamanho === "A3" ? "a3" : ""} ${p.cor}`;
+    const ZOOMS = [1, 1.6, 2.4, 3.2];
+    let z = 0;
     $("#layer").innerHTML = `<div class="fs" role="dialog" aria-modal="true" aria-label="Página em tela cheia">
-      <div class="fs-top"><span class="pgc" id="fs-pgc"></span><button class="btn" id="fs-x">✕ Fechar</button></div>
+      <div class="fs-top"><span class="pgc" id="fs-pgc"></span>
+        <button class="btn" id="fs-menos" aria-label="Diminuir">− Diminuir</button>
+        <button class="btn" id="fs-mais" aria-label="Aumentar">+ Aumentar</button>
+        <button class="btn" id="fs-x">✕ Fechar</button></div>
       <div class="fs-body">
         <button class="nav" id="fs-ant" aria-label="Página anterior">‹<span>Anterior</span></button>
         <div class="fs-page" id="fs-page"><div class="sheet ${cls}" id="fs-sheet"></div></div>
         <button class="nav" id="fs-prox" aria-label="Próxima página">›<span>Próxima</span></button>
       </div></div>`;
-    const ver = n => {
+    const ver = async (n, manterRolagem) => {
       n = Math.min(Math.max(n, 1), c.n); p.pv = n;
       const t = rotuloLado(n);
       $("#fs-pgc").textContent = `Página ${n} de ${c.n}${t ? " · " + t : ""}${calc().sel.includes(n) ? "" : " · não vai ser impressa"}`;
       $("#fs-ant").disabled = n <= 1; $("#fs-prox").disabled = n >= c.n;
-      const el = $("#fs-sheet"); el.dataset.n = n;
-      desenharPagina(el, n, Math.min(2400, $("#fs-page").clientHeight * 0.75 * (window.devicePixelRatio || 1)));
+      $("#fs-menos").disabled = z === 0; $("#fs-mais").disabled = z === ZOOMS.length - 1;
+      const box = $("#fs-page"), el = $("#fs-sheet"); el.dataset.n = n;
+      const d = await tamanhoPagina(n);
+      const W = box.clientWidth - 24, H = box.clientHeight - 24;
+      const fit = Math.min(W / d.w, H / d.h), dw = d.w * fit * ZOOMS[z], dh = d.h * fit * ZOOMS[z];
+      el.style.width = dw + "px"; el.style.height = dh + "px";
+      if (!manterRolagem) { box.scrollLeft = 0; box.scrollTop = 0; }
+      desenharPagina(el, n, { w: dw, h: dh }, 1.4);
     };
+    const zoom = dz => {
+      const box = $("#fs-page");
+      const cx = (box.scrollLeft + box.clientWidth / 2) / Math.max(1, box.scrollWidth), cy = (box.scrollTop + box.clientHeight / 2) / Math.max(1, box.scrollHeight);
+      z = Math.min(ZOOMS.length - 1, Math.max(0, z + dz));
+      ver(p.pv, true).then(() => { box.scrollLeft = cx * box.scrollWidth - box.clientWidth / 2; box.scrollTop = cy * box.scrollHeight - box.clientHeight / 2; });
+    };
+    $("#fs-mais").onclick = () => zoom(1);
+    $("#fs-menos").onclick = () => zoom(-1);
     $("#fs-ant").onclick = () => ver(p.pv - 1);
     $("#fs-prox").onclick = () => ver(p.pv + 1);
     $("#fs-x").onclick = () => { $("#layer").innerHTML = ""; mostrarPagina(p.pv); };
+    // arrastar o dedo troca de página (só sem zoom; com zoom o dedo move a página)
     let x0 = null;
     const pg = $("#fs-page");
-    pg.onpointerdown = e => { x0 = e.clientX; };
+    pg.onpointerdown = e => { x0 = z === 0 ? e.clientX : null; };
     pg.onpointerup = e => { if (x0 === null) return; const dx = e.clientX - x0; x0 = null; if (dx < -60) ver(p.pv + 1); else if (dx > 60) ver(p.pv - 1); };
+    pg.ondblclick = () => zoom(z === 0 ? 1 : -z);
     ver(p.pv);
   }
 
@@ -997,20 +1059,38 @@ h2{font-size:clamp(30px,3.6vw,42px)}
     return p.final;
   }
 
-  async function desenharPagina(el, n, larg = 260) {
-    const a = pedido.arquivo, c = calc(), fin = pedido.final;
+  let renderSeq = 0;
+  async function paginaPdf(n) {
+    const a = pedido.arquivo, fin = pedido.final;
+    if (fin) return fin.doc.getPage(Math.min(fin.doc.numPages, n));
+    if (a.doc) return a.doc.getPage(n);
+    return null;
+  }
+  async function tamanhoPagina(n) {
+    try { const pg = await paginaPdf(n); if (pg) { const v = pg.getViewport({ scale: 1 }); return { w: v.width, h: v.height }; } } catch {}
+    return { w: 595, h: 842 };
+  }
+  // caixa = {w, h} em pixels de tela onde a página vai aparecer; q = folga de nitidez
+  async function desenharPagina(el, n, caixa = { w: 260, h: 370 }, q = 1.6) {
+    const a = pedido.arquivo;
+    const meu = String(++renderSeq); el.dataset.r = meu;
     try {
-      let page;
-      if (fin) page = await fin.doc.getPage(Math.min(fin.doc.numPages, n));
-      else if (a.tipo === "img") { el.innerHTML = `<img alt="" src="${a.url}">`; return; }
-      else page = await a.doc.getPage(n);
+      const page = await paginaPdf(n);
+      if (!page) { el.innerHTML = `<img alt="" src="${a.url}">`; return; }
       const vp1 = page.getViewport({ scale: 1 });
-      const vp = page.getViewport({ scale: Math.max(80, larg) / vp1.width });
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      let s = Math.min(caixa.w / vp1.width, caixa.h / vp1.height) * dpr * q;
+      s = Math.min(s, 4096 / Math.max(vp1.width, vp1.height)); // limite de memória
+      s = Math.max(s, 0.2);
+      const vp = page.getViewport({ scale: s });
       const cv = document.createElement("canvas");
-      cv.width = vp.width; cv.height = vp.height;
-      await page.render({ canvasContext: cv.getContext("2d"), viewport: vp }).promise;
-      if (el.isConnected && (!el.dataset.n || +el.dataset.n === n)) { el.innerHTML = ""; el.style.aspectRatio = `${vp1.width} / ${vp1.height}`; el.appendChild(cv); }
-    } catch { el.textContent = "Pág. " + n; }
+      cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+      const g = cv.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, cv.width, cv.height);
+      await page.render({ canvasContext: g, viewport: vp }).promise;
+      if (el.isConnected && el.dataset.r === meu && (!el.dataset.n || +el.dataset.n === n)) {
+        el.innerHTML = ""; el.style.aspectRatio = `${vp1.width} / ${vp1.height}`; el.appendChild(cv);
+      }
+    } catch { if (el.dataset.r === meu) el.textContent = "Pág. " + n; }
   }
 
   // ---------- pagamento ----------
@@ -1114,6 +1194,25 @@ h2{font-size:clamp(30px,3.6vw,42px)}
       ${info.resumo ? `<p class="note" style="margin:0">Pedido: ${esc(info.resumo)}</p>` : ""}
     </div></section>`;
     barra(`<span class="note">Totem travado para nenhum outro cliente usar até a vendedora liberar.</span>`);
+    // volta sozinho: se a impressora avisa que voltou a imprimir (papel colocado), o totem continua sem precisar de código
+    if (info.trabalho && !/cliente/i.test(info.motivo || "")) {
+      const vig = setInterval(async () => {
+        if (tela !== "travado" || $("#v-parcial") || $("#vstatus")) return; // vendedora já está no painel
+        const j = await ponteTrabalho(info.trabalho);
+        if (!j || !j.ok || !["imprimindo", "concluido"].includes(j.status)) return;
+        clearInterval(vig);
+        try { localStorage.removeItem(LOCK); } catch {}
+        historico.unshift({ modo: "real", quando: Date.now(), arquivo: info.resumo || "(pedido)", origem: "qr", paginas: 0, folhas: 0, valor: 0, metodo: "-", cfg: `PARADA: ${info.motivo} → voltou sozinha`, segundos: 0 }); save("totem.hist", historico);
+        $("#hint").textContent = 'Toque em "Começar" para imprimir';
+        if (!pedido || !pedido.arquivo) { reiniciar(); return; }
+        clearTimers(); tela = "impressao"; const c = calc();
+        $("#main").innerHTML = `<section class="screen"><div class="done"><div class="ring">${ICON.check}</div><h2>Papel colocado! Continuando a impressão…</h2><div class="progress"><div id="imp-bar" style="width:60%"></div></div><div class="tray" aria-hidden="true"></div></div></section>`;
+        barra(`<span class="spacer"></span>`);
+        const iv = setInterval(() => {}, 100000); timers.push(iv);
+        if (j.status === "concluido") confirmarFolhas(c); else acompanharTrabalho(info.trabalho, c, iv);
+      }, 2000);
+      timers.push(vig);
+    }
     $("#libform").onsubmit = e => {
       e.preventDefault();
       const cod = $("#codv").value.trim();
@@ -1121,6 +1220,12 @@ h2{font-size:clamp(30px,3.6vw,42px)}
       if (cod && validos.includes(cod)) painelVendedora(info, cod);
       else { $("#codmsg").innerHTML = `<div class="recv bad" style="font-size:17px">Código incorreto.</div>`; $("#codv").value = ""; }
     };
+  }
+  // monta a lista de folhas do pedido na ordem em que saem (cópias agrupadas)
+  function folhasDoPedido(p, c) {
+    const porFolha = p.lados === "verso" ? 2 : 1, folhas = [];
+    for (let k = 0; k < p.copias; k++) for (let i = 0; i < c.sel.length; i += porFolha) folhas.push(c.sel.slice(i, i + porFolha));
+    return folhas;
   }
   function painelVendedora(info, cod) {
     const p = pedido;
@@ -1132,14 +1237,17 @@ h2{font-size:clamp(30px,3.6vw,42px)}
       <div style="display:grid;gap:14px">
         ${info.trabalho ? `<button class="btn primary" id="v-cont">Coloquei o papel: continuar a impressão</button>` : ""}
         ${podeReimprimir ? `<button class="btn" id="v-re">Cancelar o que ficou e imprimir o pedido inteiro de novo</button>` : ""}
-        ${podeReimprimir && p.final ? `<form id="v-parcial" class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 18px">
-          <label for="v-de" style="font-weight:700">Imprimir só o que faltou, a partir da página</label>
-          <input id="v-de" type="number" min="1" max="${p.final.doc.numPages}" value="${calc().ate}" style="width:100px;height:60px;border-radius:10px;border:2px solid var(--line);font-size:24px;text-align:center;font-family:var(--f-body)">
-          <span class="note">de ${p.final.doc.numPages}</span>
-          <button class="btn primary" type="submit">Imprimir</button></form>` : ""}
+        ${podeReimprimir && p.final ? `<form id="v-parcial" class="card" style="display:grid;gap:12px;padding:16px 18px">
+          <b style="font-size:20px">Imprimir só as folhas que faltaram</b>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <span>Quantas folhas saíram certas?</span>
+            <div class="stepper"><button type="button" id="v-menos" aria-label="Menos">−</button><output id="v-saidas">${Math.max(0, calc().folhas - 1)}</output><button type="button" id="v-mais" aria-label="Mais">+</button></div>
+            <span class="note">de ${calc().folhas}</span>
+          </div>
+          <button class="btn primary" type="submit" id="v-parcial-ok"></button></form>` : ""}
         <button class="btn" id="v-fim">Já entreguei as folhas: finalizar e liberar o totem</button>
       </div>
-      <p class="note" style="margin:0">A impressora costuma continuar sozinha depois que o papel é colocado. Confira as folhas que saíram antes de escolher.</p>
+      <p class="note" style="margin:0">Se a luz da impressora estiver piscando depois de colocar o papel: abra e feche a tampa da impressora (ou desligue e ligue). Depois conte as folhas que saíram e use "Imprimir só as folhas que faltaram".</p>
     </section>`;
     barra(`<span class="note">Liberado pelo código ${esc(cod.replace(/.(?=.{2})/g, "•"))}</span>`);
     const atualizar = async () => {
@@ -1147,7 +1255,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
       const st = await ponteStatus(); const j = info.trabalho ? await ponteTrabalho(info.trabalho) : null;
       if (!$("#vstatus")) return;
       if (!st) { el.className = "recv bad"; el.textContent = "Ponte de impressão não responde (janela preta fechada?)"; return; }
-      const txt = j && j.ok ? ({ imprimindo: "imprimindo", enviando: "enviando", problema: "parada: " + j.motivo, concluido: "concluída", cancelado: "cancelada", erro: "com erro" })[j.status] : "sem informação";
+      const txt = j && j.ok ? ({ imprimindo: "imprimindo", enviando: "enviando", problema: "parada: " + j.motivo, concluido: "o computador já mandou tudo para a impressora", cancelado: "cancelado", erro: "com erro" })[j.status] : "sem informação";
       el.className = "recv " + (st.pronta && (!j || j.status !== "problema") ? "ok" : "bad");
       el.textContent = `Impressora: ${st.pronta ? "pronta" : st.motivo} · Este pedido: ${txt}`;
       const vc = $("#v-cont"); if (vc) vc.hidden = !!(j && j.ok && ["concluido", "cancelado", "erro"].includes(j.status));
@@ -1169,14 +1277,28 @@ h2{font-size:clamp(30px,3.6vw,42px)}
       if (info.trabalho) await ponteCancelar(info.trabalho);
       ir("impressao");
     };
-    if ($("#v-parcial")) $("#v-parcial").onsubmit = async e => {
-      e.preventDefault();
-      const de = Math.max(1, Math.min(p.final.doc.numPages, parseInt($("#v-de").value, 10) || 1));
-      registrar(`reimprimir a partir da pág. ${de}`); sair();
-      if (info.trabalho) await ponteCancelar(info.trabalho);
-      p.reimpressao = { de };
-      ir("impressao");
-    };
+    if ($("#v-parcial")) {
+      const c0 = calc(), folhas = folhasDoPedido(p, c0);
+      let saidas = Math.max(0, folhas.length - 1);
+      const mostra = () => {
+        $("#v-saidas").textContent = saidas;
+        const faltam = folhas.length - saidas;
+        $("#v-parcial-ok").textContent = faltam ? `Imprimir as ${faltam} ${faltam > 1 ? "folhas que faltaram" : "folha que faltou"}` : "Não falta nenhuma folha";
+        $("#v-parcial-ok").disabled = !faltam;
+      };
+      $("#v-menos").onclick = () => { saidas = Math.max(0, saidas - 1); mostra(); };
+      $("#v-mais").onclick = () => { saidas = Math.min(folhas.length, saidas + 1); mostra(); };
+      mostra();
+      $("#v-parcial").onsubmit = async e => {
+        e.preventDefault();
+        const resto = folhas.slice(saidas);
+        if (!resto.length) return;
+        registrar(`saíram ${saidas}, reimprimir ${resto.length} folha(s)`); sair();
+        if (info.trabalho) await ponteCancelar(info.trabalho);
+        p.reimpressao = { lista: resto.flat(), folhas: resto.length };
+        ir("impressao");
+      };
+    }
     $("#v-fim").onclick = async () => {
       registrar("finalizar"); sair();
       if (info.trabalho) await ponteCancelar(info.trabalho);
