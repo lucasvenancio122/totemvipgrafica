@@ -507,7 +507,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
         </div>
         <div class="balcao">${ICON.desk.replace("<svg", '<svg width="34" height="34"')}<span>Precisa de ajuda? <b>Fale com nossa equipe no balcão.</b></span></div>
       </section>`;
-      barra(`<button class="btn ghost" id="admin">Equipe</button><span class="spacer"></span>`);
+      barra(`<button class="btn ghost" id="admin">Equipe</button><span class="spacer"></span><span class="note">versão 3.7</span>`);
       $("#go").onclick = () => { pedido = novoPedido(); ir("envio"); };
       if (sb) sb.auth.getSession().then(r => { if (r.data && r.data.session) prepararSessao(); });
       $("#admin").onclick = abrirAdmin;
@@ -771,7 +771,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
     const lado = $("#lado"); if (lado) { const t = rotuloLado(n); lado.hidden = !t; lado.textContent = t; }
     const corte = $("#corte"); if (corte) corte.hidden = !(pedido.final && pedido.final.cortes[Math.min(pedido.final.cortes.length, n) - 1]);
     const big = $("#bigsheet");
-    if (big) { big.dataset.n = n; const st = big.parentElement; desenharPagina(big, n, { w: st.clientWidth - 36, h: st.clientHeight - 36 }, 1.8); }
+    if (big) { big.dataset.n = n; const st = big.parentElement; desenharPagina(big, n, { w: st.clientWidth - 36, h: st.clientHeight - 36 }, 2); }
     document.querySelectorAll(".thumb").forEach(b => {
       const on = +b.dataset.n === n; b.setAttribute("aria-current", on);
       if (on) b.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
@@ -805,7 +805,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
       const fit = Math.min(W / d.w, H / d.h), dw = d.w * fit * ZOOMS[z], dh = d.h * fit * ZOOMS[z];
       el.style.width = dw + "px"; el.style.height = dh + "px";
       if (!manterRolagem) { box.scrollLeft = 0; box.scrollTop = 0; }
-      desenharPagina(el, n, { w: dw, h: dh }, 1.4);
+      desenharPagina(el, n, { w: dw, h: dh }, 2);
     };
     const zoom = dz => {
       const box = $("#fs-page");
@@ -1080,7 +1080,7 @@ h2{font-size:clamp(30px,3.6vw,42px)}
       const vp1 = page.getViewport({ scale: 1 });
       const dpr = Math.max(1, window.devicePixelRatio || 1);
       let s = Math.min(caixa.w / vp1.width, caixa.h / vp1.height) * dpr * q;
-      s = Math.min(s, 4096 / Math.max(vp1.width, vp1.height)); // limite de memória
+      s = Math.min(s, 5000 / Math.max(vp1.width, vp1.height)); // limite de memória
       s = Math.max(s, 0.2);
       const vp = page.getViewport({ scale: s });
       const cv = document.createElement("canvas");
